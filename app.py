@@ -240,12 +240,18 @@ def render_chat():
 def render_audio_controls():
     """Render audio recording and playback controls."""
     if st.session_state.current_audio and st.session_state.voice_enabled:
+        st.markdown("#### 🔊 AI Speaking...")
         st.audio(st.session_state.current_audio, format="audio/wav", autoplay=True)
-        st.session_state.current_audio = None
+        if st.button("✅ I've listened - Show Microphone", key="audio_done"):
+            st.session_state.current_audio = None
+            st.rerun()
+        return
     
     if st.session_state.awaiting_answer and not st.session_state.processing:
         st.markdown("---")
         st.markdown("### 🎤 Your Response")
+        
+        recorder_key = f"recorder_q{st.session_state.current_question_index}"
         
         col1, col2 = st.columns([3, 1])
         
@@ -255,12 +261,13 @@ def render_audio_controls():
                 recording_color="#e74c3c",
                 neutral_color="#3498db",
                 icon_size="2x",
-                pause_threshold=2.0
+                pause_threshold=2.0,
+                key=recorder_key
             )
         
         with col2:
             st.markdown("")
-            st.caption("🔴 Recording...")
+            st.caption("🎙️ Click mic to record")
         
         if audio_bytes:
             st.audio(audio_bytes, format="audio/wav")
@@ -271,7 +278,7 @@ def render_audio_controls():
                     
                     if error:
                         st.error(f"⚠️ {error}")
-                        st.info("Please try recording again.")
+                        st.info("Please try recording again or use text input below.")
                     else:
                         st.session_state.last_transcription = transcription
                         st.session_state.show_transcription = True
@@ -291,6 +298,18 @@ def render_audio_controls():
                     st.session_state.show_transcription = False
                     st.session_state.last_transcription = ''
                     st.rerun()
+        
+        st.markdown("---")
+        st.markdown("##### 📝 Or type your answer:")
+        text_answer = st.text_area(
+            "Type your response here",
+            key=f"text_answer_q{st.session_state.current_question_index}",
+            height=100,
+            placeholder="If you can't use the microphone, type your answer here..."
+        )
+        if text_answer and st.button("📤 Submit Text Answer", key="submit_text"):
+            process_answer(text_answer)
+            st.rerun()
 
 
 def render_final_report():
