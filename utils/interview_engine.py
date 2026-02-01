@@ -9,7 +9,7 @@ import os
 from typing import Dict, List, Optional
 from openai import OpenAI
 
-from config import OPENAI_MODEL, TOTAL_QUESTIONS
+from config import OPENAI_MODEL, TOTAL_QUESTIONS, DEMO_MODE
 
 
 def get_openai_client() -> OpenAI:
@@ -72,7 +72,65 @@ RESPONSE FORMAT (strict JSON):
 }}"""
 
 
-def get_first_question(cv_text: str, jd_text: str, seniority: str) -> Dict:
+def get_demo_first_question() -> Dict:
+    """Return a mock first question for demo mode."""
+    return {
+        "greeting": "Welcome to your demo interview! This is a test mode that doesn't use AI credits.",
+        "question": "Tell me about a recent project you worked on and what your role was in it."
+    }
+
+
+def get_demo_evaluation(question_number: int, answer: str) -> Dict:
+    """Return mock evaluation for demo mode."""
+    demo_scores = [7, 8]
+    demo_tips = [
+        "Try to quantify your achievements with specific numbers or metrics.",
+        "Use the STAR method (Situation, Task, Action, Result) for behavioral questions."
+    ]
+    demo_next_questions = [
+        "What was the biggest challenge you faced in that project and how did you overcome it?",
+        None
+    ]
+    
+    idx = min(question_number - 1, len(demo_scores) - 1)
+    
+    return {
+        "score": demo_scores[idx],
+        "justification": f"Good answer! You provided relevant details about your experience. (Demo mode - score is simulated)",
+        "pro_tip": demo_tips[idx],
+        "next_question": demo_next_questions[idx] if question_number < TOTAL_QUESTIONS else None,
+        "question_number": question_number
+    }
+
+
+def get_demo_final_report(scores: List[int]) -> str:
+    """Return a mock final report for demo mode."""
+    avg_score = sum(scores) / len(scores) if scores else 5
+    return f"""## Interview Feedback Report (Demo Mode)
+
+### Performance Summary
+This is a **demo report** generated without using AI credits. Your average score was {avg_score:.1f}/10.
+
+### Strengths
+- You completed the demo interview flow successfully
+- The application is working correctly
+- Ready for real interviews!
+
+### Areas for Improvement
+- This is placeholder feedback for testing
+- Enable real AI mode for actual interview coaching
+
+### 7-Day Practice Plan
+**Day 1-2:** Review common interview questions
+**Day 3-4:** Practice STAR method responses
+**Day 5-6:** Mock interviews with peers
+**Day 7:** Final preparation and rest
+
+---
+*This report was generated in Demo Mode. Disable Demo Mode for real AI feedback.*"""
+
+
+def get_first_question(cv_text: str, jd_text: str, seniority: str, demo_mode: bool = False) -> Dict:
     """
     Generate the first interview question.
     
@@ -80,10 +138,14 @@ def get_first_question(cv_text: str, jd_text: str, seniority: str) -> Dict:
         cv_text: Extracted text from CV/resume
         jd_text: Job description text
         seniority: Candidate seniority level
+        demo_mode: If True, return mock response without API call
         
     Returns:
         Dict with greeting and first question
     """
+    if demo_mode:
+        return get_demo_first_question()
+    
     client = get_openai_client()
     
     prompt = f"""Based on this candidate's CV and the job requirements, generate an opening greeting and the first interview question.
@@ -129,7 +191,8 @@ def evaluate_answer_and_get_next(
     seniority: str,
     conversation_history: List[Dict],
     current_answer: str,
-    question_number: int
+    question_number: int,
+    demo_mode: bool = False
 ) -> Dict:
     """
     Evaluate the candidate's answer and get the next question.
@@ -141,10 +204,14 @@ def evaluate_answer_and_get_next(
         conversation_history: List of previous messages
         current_answer: The candidate's current answer
         question_number: Current question number (1-5)
+        demo_mode: If True, return mock response without API call
         
     Returns:
         Dict with score, justification, pro_tip, and next_question
     """
+    if demo_mode:
+        return get_demo_evaluation(question_number, current_answer)
+    
     client = get_openai_client()
     
     system_prompt = build_system_prompt(cv_text, jd_text, seniority)
@@ -192,7 +259,8 @@ def generate_final_report(
     questions: List[str],
     answers: List[str],
     scores: List[int],
-    tips: List[str]
+    tips: List[str],
+    demo_mode: bool = False
 ) -> str:
     """
     Generate a comprehensive final feedback report.
@@ -205,10 +273,14 @@ def generate_final_report(
         answers: List of candidate answers
         scores: List of scores for each answer
         tips: List of pro tips given
+        demo_mode: If True, return mock report without API call
         
     Returns:
         Formatted feedback report string
     """
+    if demo_mode:
+        return get_demo_final_report(scores)
+    
     client = get_openai_client()
     
     qa_summary = ""

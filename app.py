@@ -31,6 +31,7 @@ def init_session_state():
         'interview_started': False,
         'interview_completed': False,
         'voice_enabled': False,
+        'demo_mode': True,
         'seniority': 'Mid',
         'current_audio': None,
         'awaiting_answer': False,
@@ -107,6 +108,12 @@ def render_sidebar():
         voice_enabled = st.toggle("🔊 Voice Mode", value=st.session_state.voice_enabled)
         st.session_state.voice_enabled = voice_enabled
         
+        demo_mode = st.toggle("🧪 Demo Mode (No AI Cost)", value=st.session_state.demo_mode)
+        st.session_state.demo_mode = demo_mode
+        
+        if demo_mode:
+            st.caption("✅ Demo mode uses mock responses - no API costs!")
+        
         st.divider()
         
         col1, col2 = st.columns(2)
@@ -137,7 +144,8 @@ def start_interview():
         result = get_first_question(
             st.session_state.cv_text,
             st.session_state.jd_text,
-            st.session_state.seniority
+            st.session_state.seniority,
+            demo_mode=st.session_state.demo_mode
         )
         
         greeting = result.get('greeting', 'Welcome to your mock interview!')
@@ -187,7 +195,8 @@ def process_answer(transcription: str):
             st.session_state.seniority,
             conversation_history,
             transcription,
-            st.session_state.current_question_index
+            st.session_state.current_question_index,
+            demo_mode=st.session_state.demo_mode
         )
         
         score = result.get('score', 5)
@@ -284,7 +293,8 @@ def render_final_report():
                         st.session_state.questions,
                         st.session_state.answers,
                         st.session_state.scores,
-                        st.session_state.tips
+                        st.session_state.tips,
+                        demo_mode=st.session_state.demo_mode
                     )
                     
                     st.markdown("## 📋 Your Interview Feedback Report")

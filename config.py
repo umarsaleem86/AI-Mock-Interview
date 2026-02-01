@@ -16,3 +16,5 @@ TTS_VOICE = "alloy"
 TOTAL_QUESTIONS = 2
 
 SENIORITY_LEVELS = ["Junior", "Mid", "Senior"]
+
+DEMO_MODE = False
