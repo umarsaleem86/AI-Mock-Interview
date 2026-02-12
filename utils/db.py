@@ -1,0 +1,143 @@
+import os
+import json
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import bcrypt
+from datetime import datetime
+
+
+def get_connection():
+    return psycopg2.connect(os.environ["DATABASE_URL"])
+
+
+def init_db():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS interviews (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            created_at TIMESTAMP DEFAULT NOW(),
+            seniority VARCHAR(20),
+            demo_mode BOOLEAN DEFAULT FALSE,
+            cv_text TEXT,
+            jd_text TEXT,
+            questions JSONB,
+            answers JSONB,
+            scores JSONB,
+            tips JSONB,
+            justifications JSONB,
+            report TEXT,
+            avg_score FLOAT
+        )
+    """)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def create_user(username: str, password: str) -> dict:
+    username = username.strip().lower()
+    if len(username) < 3:
+        return {"success": False, "error": "Username must be at least 3 characters"}
+    if len(password) < 6:
+        return {"success": False, "error": "Password must be at least 6 characters"}
+
+    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    try:
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(
+            "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id, username",
+            (username, password_hash)
+        )
+        user = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "user_id": user["id"], "username": user["username"]}
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        return {"success": False, "error": "Username already taken"}
+    except Exception as e:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        return {"success": False, "error": str(e)}
+
+
+def verify_user(username: str, password: str) -> dict:
+    username = username.strip().lower()
+    try:
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT id, username, password_hash FROM users WHERE username = %s", (username,))
+        user = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        if not user:
+            return {"success": False, "error": "Invalid username or password"}
+
+        if bcrypt.checkpw(password.encode('utf-8'), user["password_hash"].encode('utf-8')):
+            return {"success": True, "user_id": user["id"], "username": user["username"]}
+        else:
+            return {"success": False, "error": "Invalid username or password"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def save_interview(user_id: int, seniority: str, demo_mode: bool, cv_text: str, jd_text: str,
+                   questions: list, answers: list, scores: list, tips: list,
+                   justifications: list, report: str, avg_score: float) -> dict:
+    try:
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            INSERT INTO interviews (user_id, seniority, demo_mode, cv_text, jd_text,
+                                    questions, answers, scores, tips, justifications, report, avg_score)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """, (user_id, seniority, demo_mode, cv_text, jd_text,
+              json.dumps(questions), json.dumps(answers), json.dumps(scores),
+              json.dumps(tips), json.dumps(justifications), report, avg_score))
+        result = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "interview_id": result["id"]}
+    except Exception as e:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        return {"success": False, "error": str(e)}
+
+
+def get_user_interviews(user_id: int) -> list:
+    try:
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT id, created_at, seniority, demo_mode, avg_score,
+                   questions, answers, scores, tips, justifications, report
+            FROM interviews
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+        """, (user_id,))
+        interviews = cur.fetchall()
+        cur.close()
+        conn.close()
+        return interviews
+    except Exception:
+        return []
