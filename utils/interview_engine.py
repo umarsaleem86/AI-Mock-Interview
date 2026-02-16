@@ -294,40 +294,91 @@ Score: {s}/10
 Tip: {t}
 ---"""
 
-    prompt = f"""Generate a comprehensive interview feedback report for this candidate.
+    job_role = jd_text.split('\n')[0].strip() if jd_text else f"{seniority}-level role (based on CV)"
 
-CANDIDATE'S CV:
-{cv_text}
+    prompt = f"""You are an expert interview coach and hiring manager. Create a "Final Report: Feedback with Practice Plan" based strictly on the transcript and role context.
 
-JOB DESCRIPTION:
-{jd_text if jd_text else "General software engineering role"}
+Rules:
+- Be specific. No generic advice.
+- Cite evidence from the transcript in each weakness.
+- Provide an actionable plan with time estimates and measurable outcomes.
+- Do not invent details.
 
-SENIORITY LEVEL: {seniority}
+Write the report in this EXACT structure:
 
-INTERVIEW SUMMARY:
+# Final Report: Feedback with Practice Plan
+
+## 1) Overall Score (out of 10)
+- Score:
+- One-paragraph summary:
+
+## 2) Score Breakdown (out of 10)
+- Answer Structure:
+- Communication Clarity:
+- Confidence & Delivery:
+- Role Fit:
+- Technical/Domain Depth:
+- Problem Solving:
+- Examples & Evidence:
+
+## 3) Top Strengths (3–5)
+For each:
+- Strength:
+- Evidence from transcript:
+- Why it matters:
+
+## 4) Weak Areas & Skill Gaps (most important)
+For each:
+- Weak area:
+- Severity: High/Medium/Low
+- Evidence from transcript:
+- Why this is a problem:
+- Hiring impact:
+- Fix strategy:
+
+## 5) Actionable Practice Plan (make weaknesses strong)
+### Daily plan (7 days)
+For each day:
+- Focus (1 line)
+- 2–4 exercises
+- Time required (minutes)
+- Success criteria (how to know it improved)
+
+### Weekly plan (4 weeks)
+Week 1–4:
+- Focus
+- Goals
+- Practice routines
+- Mock interview tasks
+
+## 6) Sample Improved Answers (2 examples)
+- One behavioral using STAR
+- One role/technical using a clear framework
+Include: improved answer + why it's better.
+
+## 7) Next Interview Goals
+- Top 3 focus areas
+- Metrics to track
+- What to prepare before next session
+
+Context:
+Job Role: {job_role}
+Job Description (if provided): {jd_text if jd_text else "Not provided"}
+Resume Summary: {cv_text[:1500]}
+Interview Transcript:
 {qa_summary}
 
 AVERAGE SCORE: {sum(scores)/len(scores):.1f}/10
 
-Generate a detailed report with the following sections:
-1. **Performance Summary** - Overall assessment (2-3 sentences)
-2. **Strengths** - 3-4 bullet points of what they did well
-3. **Areas for Improvement** - 3-4 bullet points of areas to work on
-4. **Suggested Better Answers** - For the 2 lowest-scoring questions, provide example better answers
-5. **7-Day Practice Plan** - A day-by-day practice plan to improve interview skills
+Format the entire report in clean Markdown. Be thorough, specific, and reference the actual transcript content throughout."""
 
-Make the feedback specific, actionable, and reference the job requirements where relevant.
-Format the report in clean Markdown."""
-
-    # the newest OpenAI model is "gpt-5" which was released August 7, 2025.
-    # do not change this unless explicitly requested by the user
     response = client.chat.completions.create(
         model=OPENAI_MODEL,
         messages=[
-            {"role": "system", "content": "You are an expert career coach providing detailed interview feedback. Be encouraging but honest."},
+            {"role": "system", "content": "You are an expert interview coach and hiring manager. Provide brutally honest, specific feedback based strictly on the interview transcript. Never use generic advice. Always cite evidence from the transcript. Be encouraging but direct about weaknesses."},
             {"role": "user", "content": prompt}
         ],
-        max_completion_tokens=2000
+        max_completion_tokens=4000
     )
     
     return response.choices[0].message.content
