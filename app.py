@@ -557,14 +557,14 @@ def render_response_input():
     tab_type, tab_voice = st.tabs(["⌨️ Type Answer", "🎙️ Record Answer"])
 
     if st.session_state.has_recording:
-        st.markdown("""
+        st.components.v1.html("""
         <script>
         (function() {
             var tabs = window.parent.document.querySelectorAll('[data-baseweb="tab"]');
             if (tabs.length >= 2) { tabs[1].click(); }
         })();
         </script>
-        """, unsafe_allow_html=True)
+        """, height=0)
 
     with tab_type:
         text_answer = st.text_area(
@@ -599,6 +599,7 @@ def render_response_input():
         if audio_bytes:
             if not st.session_state.has_recording:
                 st.session_state.has_recording = True
+                st.rerun()
 
             st.markdown("""
             <div style="background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.3); 
