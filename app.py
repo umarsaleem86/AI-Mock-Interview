@@ -572,9 +572,85 @@ def render_response_input():
                 st.warning("Please enter your answer before submitting.")
 
     with tab_voice:
-        st.markdown("Click the microphone to start recording. Click again to stop. You have up to 30 seconds.")
-        
         recorder_key = f"audio_{st.session_state.current_question_index}_{len(st.session_state.answers)}_{st.session_state.recorder_version}"
+
+        st.markdown("""
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span style="color: #c3cfe2;">Click the microphone to start recording. Click again to stop.</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.components.v1.html("""
+        <div id="rec-status" style="margin: 4px 0 8px 0; font-size: 14px; min-height: 28px;">
+            <span id="idle-msg" style="color: #a0a0b8;">🎙️ Press the microphone to begin (up to 30 seconds)</span>
+            <span id="rec-msg" style="display:none; color: #e74c3c; font-weight: 600;">
+                🔴 Recording... <span id="timer">0:00</span> / 0:30
+            </span>
+        </div>
+        <script>
+        (function() {
+            var started = false;
+            var seconds = 0;
+            var interval = null;
+            
+            function checkRecording() {
+                var btns = window.parent.document.querySelectorAll('button[kind="secondary"]');
+                var isRecording = false;
+                btns.forEach(function(btn) {
+                    if (btn.closest('[data-testid="stVerticalBlock"]')) {
+                        var svg = btn.querySelector('svg');
+                        if (svg) {
+                            var path = svg.querySelector('path');
+                            if (path && path.getAttribute('fill') === '#e74c3c') {
+                                isRecording = true;
+                            }
+                        }
+                    }
+                });
+
+                var iframes = window.parent.document.querySelectorAll('iframe');
+                iframes.forEach(function(iframe) {
+                    try {
+                        var doc = iframe.contentDocument;
+                        if (doc) {
+                            var recBtn = doc.querySelector('[style*="recording"], .recording, [data-recording="true"]');
+                            if (recBtn) isRecording = true;
+                        }
+                    } catch(e) {}
+                });
+                
+                var idleMsg = document.getElementById('idle-msg');
+                var recMsg = document.getElementById('rec-msg');
+                var timerEl = document.getElementById('timer');
+                
+                if (!idleMsg || !recMsg) return;
+                
+                if (isRecording && !started) {
+                    started = true;
+                    seconds = 0;
+                    idleMsg.style.display = 'none';
+                    recMsg.style.display = 'inline';
+                    interval = setInterval(function() {
+                        seconds++;
+                        var m = Math.floor(seconds / 60);
+                        var s = seconds % 60;
+                        timerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+                        if (seconds >= 30) {
+                            clearInterval(interval);
+                        }
+                    }, 1000);
+                } else if (!isRecording && started) {
+                    started = false;
+                    if (interval) clearInterval(interval);
+                    recMsg.style.display = 'none';
+                    idleMsg.style.display = 'none';
+                }
+            }
+            setInterval(checkRecording, 500);
+        })();
+        </script>
+        """, height=36)
+
         audio_bytes = audio_recorder(
             text="",
             recording_color="#e74c3c",
@@ -628,13 +704,6 @@ def render_response_input():
                              key=f"rerecord_{st.session_state.current_question_index}_{len(st.session_state.answers)}"):
                     st.session_state.recorder_version += 1
                     st.rerun()
-        else:
-            st.markdown("""
-            <div style="color: #a0a0b8; font-size: 0.9rem; padding: 8px 0;">
-                🎙️ Press the microphone button above to start recording your answer. 
-                The button turns <span style="color: #e74c3c; font-weight: 600;">red</span> while recording.
-            </div>
-            """, unsafe_allow_html=True)
 
 
 def render_final_report():
