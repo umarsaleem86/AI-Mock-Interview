@@ -5,6 +5,8 @@ Main Streamlit application with interview functionality.
 
 import json
 import base64
+from datetime import timezone
+from zoneinfo import ZoneInfo
 import streamlit as st
 
 from audio_recorder_streamlit import audio_recorder
@@ -733,10 +735,50 @@ def render_final_report():
                 st.error(f"Failed to generate report: {str(e)}")
 
 
+def get_user_timezone():
+    if 'user_tz' not in st.session_state:
+        st.session_state.user_tz = None
+
+    if st.session_state.user_tz is None:
+        tz_param = st.query_params.get("tz")
+        if tz_param:
+            st.session_state.user_tz = tz_param
+        else:
+            st.components.v1.html("""
+            <script>
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const url = new URL(window.parent.location);
+            if (!url.searchParams.has('tz')) {
+                url.searchParams.set('tz', tz);
+                window.parent.history.replaceState({}, '', url);
+                window.parent.location.reload();
+            }
+            </script>
+            """, height=0)
+            return None
+
+    return st.session_state.user_tz
+
+
+def format_interview_time(dt, tz_name):
+    if not dt:
+        return "Unknown"
+    try:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        user_tz = ZoneInfo(tz_name)
+        local_dt = dt.astimezone(user_tz)
+        return local_dt.strftime("%B %d, %Y at %I:%M %p")
+    except Exception:
+        return dt.strftime("%B %d, %Y at %I:%M %p")
+
+
 def render_history_page():
     st.title("📜 Interview History")
     st.markdown(f'<p style="color: #a0a0b8;">Past interviews for <strong style="color:#667eea;">{st.session_state.username}</strong></p>', unsafe_allow_html=True)
     st.markdown("---")
+
+    user_tz = get_user_timezone()
 
     interviews = get_user_interviews(st.session_state.user_id)
 
@@ -745,7 +787,7 @@ def render_history_page():
         return
 
     for i, interview in enumerate(interviews):
-        created = interview["created_at"].strftime("%B %d, %Y at %I:%M %p") if interview["created_at"] else "Unknown"
+        created = format_interview_time(interview["created_at"], user_tz) if user_tz else (interview["created_at"].strftime("%B %d, %Y at %I:%M %p") if interview["created_at"] else "Unknown")
         avg = interview["avg_score"] or 0
         mode = "Demo" if interview["demo_mode"] else "AI"
         label = f"**{created}** — Score: {avg:.1f}/10 — {interview['seniority']} level — {mode} Mode"
