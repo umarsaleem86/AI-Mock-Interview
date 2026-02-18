@@ -253,7 +253,7 @@ def render_auth_page():
     col_spacer1, col_main, col_spacer2 = st.columns([1, 2, 1])
 
     with col_main:
-        st.title("🎯 AI Mock Interview")
+        st.markdown('<h1 style="margin-bottom: 0;"><span style="font-size: 1.1em;">🎤</span> AI Mock Interview</h1>', unsafe_allow_html=True)
         st.markdown('<p style="color: #a0a0b8; font-size: 1.2rem; margin-bottom: 24px;">Master your next job interview with AI-powered coaching</p>', unsafe_allow_html=True)
 
         tab_login, tab_register = st.tabs(["🔑 Login", "✨ Create Account"])
@@ -818,7 +818,7 @@ def render_history_page():
 
 
 def render_interview_page():
-    st.title("🎯 AI Mock Interview")
+    st.markdown('<h1 style="margin-bottom: 0;"><span style="font-size: 1.1em;">🎤</span> AI Mock Interview</h1>', unsafe_allow_html=True)
     st.markdown('<p style="color: #a0a0b8; font-size: 1.1rem;">Practice your interview skills with AI-powered coaching</p>', unsafe_allow_html=True)
 
     if not st.session_state.interview_started:
@@ -858,7 +858,7 @@ def render_interview_page():
 def main():
     st.set_page_config(
         page_title="AI Mock Interview",
-        page_icon="🎯",
+        page_icon="🎤",
         layout="wide"
     )
 
