@@ -660,6 +660,87 @@ def render_response_input():
     with tab_voice:
         st.markdown('<p style="color: #c3cfe2; margin-bottom: 4px;">Click the microphone to record (up to 30 seconds). Click again to stop.</p>', unsafe_allow_html=True)
 
+        st.markdown("""
+        <style>
+        @keyframes recPulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes recBarAnim {
+            0%, 100% { height: 8px; }
+            25% { height: 20px; }
+            50% { height: 14px; }
+            75% { height: 22px; }
+        }
+        </style>
+        <script>
+        (function() {
+            function watchRecorder() {
+                const indicator = document.getElementById('recording-indicator');
+                if (!indicator) { setTimeout(watchRecorder, 500); return; }
+                const observer = new MutationObserver(() => {
+                    const recBtn = document.querySelector('[data-testid="stAudioRecorder"] button, .audio-recorder-component button, iframe[title*="audio"]');
+                    if (!recBtn) {
+                        const iframes = document.querySelectorAll('iframe');
+                        iframes.forEach(iframe => {
+                            try {
+                                const doc = iframe.contentDocument;
+                                if (doc) {
+                                    const svg = doc.querySelector('svg[style*="red"], svg[fill="red"], .recording');
+                                    if (svg) indicator.style.display = 'flex';
+                                }
+                            } catch(e) {}
+                        });
+                    }
+                });
+                observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+
+                setInterval(() => {
+                    const allSvgs = document.querySelectorAll('svg');
+                    let isRecording = false;
+                    allSvgs.forEach(svg => {
+                        const fill = svg.getAttribute('fill') || '';
+                        const style = svg.getAttribute('style') || '';
+                        if ((fill.includes('#e74c3c') || style.includes('#e74c3c') || fill.includes('red')) && svg.closest('[class*="audio"]')) {
+                            isRecording = true;
+                        }
+                    });
+                    const iframes = document.querySelectorAll('iframe');
+                    iframes.forEach(iframe => {
+                        try {
+                            const doc = iframe.contentDocument || iframe.contentWindow.document;
+                            const recSvgs = doc.querySelectorAll('svg');
+                            recSvgs.forEach(svg => {
+                                const fill = svg.getAttribute('fill') || '';
+                                if (fill.includes('#e74c3c') || fill === 'red') isRecording = true;
+                            });
+                        } catch(e) {}
+                    });
+                    indicator.style.display = isRecording ? 'flex' : 'none';
+                }, 300);
+            }
+            if (document.readyState === 'complete') watchRecorder();
+            else window.addEventListener('load', watchRecorder);
+        })();
+        </script>
+        <div id="recording-indicator" style="display: none; align-items: center; gap: 12px; padding: 14px 18px;
+            background: linear-gradient(135deg, rgba(231,76,60,0.15), rgba(192,57,43,0.15));
+            border: 1px solid rgba(231,76,60,0.4); border-radius: 12px; margin: 8px 0;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background: #e74c3c;
+                animation: recPulse 1s ease-in-out infinite;"></div>
+            <span style="color: #e74c3c; font-weight: 600; font-size: 1rem;">Recording in progress...</span>
+            <div style="display: flex; align-items: center; gap: 3px; margin-left: 8px;">
+                <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out infinite;"></div>
+                <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out 0.1s infinite;"></div>
+                <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out 0.2s infinite;"></div>
+                <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out 0.3s infinite;"></div>
+                <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out 0.4s infinite;"></div>
+            </div>
+            <span style="color: #f5b7b1; font-size: 0.85rem; margin-left: auto;">Speak clearly into your microphone</span>
+        </div>
+        """, unsafe_allow_html=True)
+
         audio_bytes = audio_recorder(
             text="",
             recording_color="#e74c3c",
