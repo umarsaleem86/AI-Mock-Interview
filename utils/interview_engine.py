@@ -24,28 +24,32 @@ def get_openai_client() -> OpenAI:
     )
 
 
-def build_system_prompt(cv_text: str, jd_text: str, seniority: str) -> str:
-    """
-    Build the system prompt for the AI interviewer.
-    
-    Args:
-        cv_text: Extracted text from CV/resume
-        jd_text: Job description text
-        seniority: Candidate seniority level
-        
-    Returns:
-        System prompt string
-    """
-    return f"""You are an expert technical interviewer conducting a mock interview for a {seniority}-level position.
+def is_quick_start(cv_text: str) -> bool:
+    return cv_text.startswith("Role: ") and len(cv_text) < 100
 
-CANDIDATE'S CV/RESUME:
+
+def build_system_prompt(cv_text: str, jd_text: str, seniority: str) -> str:
+    quick_mode = is_quick_start(cv_text)
+
+    if quick_mode:
+        role = cv_text.replace("Role: ", "").strip()
+        context_block = f"""TARGET ROLE: {role}
+SENIORITY LEVEL: {seniority}
+
+NOTE: No CV was provided. Ask general interview questions appropriate for a {seniority}-level {role} position. Focus on common skills, scenarios, and competencies expected for this role and level."""
+    else:
+        context_block = f"""CANDIDATE'S CV/RESUME:
 {cv_text}
 
 JOB DESCRIPTION/REQUIREMENTS:
-{jd_text if jd_text else "General software engineering role - focus on the candidate's background and experience from their CV."}
+{jd_text if jd_text else "General software engineering role - focus on the candidate's background and experience from their CV."}"""
+
+    return f"""You are an expert technical interviewer conducting a mock interview for a {seniority}-level position.
+
+{context_block}
 
 YOUR ROLE:
-- You will ask exactly {TOTAL_QUESTIONS} interview questions tailored to the job requirements and candidate's background.
+- You will ask exactly {TOTAL_QUESTIONS} interview questions tailored to the {'role and seniority level' if quick_mode else 'job requirements and candidate background'}.
 - Ask only ONE question at a time.
 - CRITICAL: Keep each question SHORT and CONCISE — maximum 1-2 sentences. Do NOT ask multi-part questions. Ask one simple, clear question that can be answered in a few minutes.
 - After each candidate answer, you MUST respond with a JSON object containing:
@@ -58,7 +62,7 @@ YOUR ROLE:
 IMPORTANT RULES:
 - Be encouraging but honest in your feedback
 - Pro tips should be specific and actionable
-- Questions should be relevant to both the CV and job requirements
+- {'Questions should be typical for the role and seniority level' if quick_mode else 'Questions should be relevant to both the CV and job requirements'}
 - Keep questions brief and focused — never combine multiple questions into one
 - After question {TOTAL_QUESTIONS}, set next_question to null to signal the interview is complete
 
@@ -148,13 +152,21 @@ def get_first_question(cv_text: str, jd_text: str, seniority: str, demo_mode: bo
     
     client = get_openai_client()
     
-    prompt = f"""Based on this candidate's CV and the job requirements, generate an opening greeting and the first interview question.
+    quick_mode = is_quick_start(cv_text)
+
+    if quick_mode:
+        role = cv_text.replace("Role: ", "").strip()
+        context = f"""The candidate is interviewing for a {seniority}-level {role} position. No CV was provided — ask a common, relevant interview question for this role and level."""
+    else:
+        context = f"""Based on this candidate's CV and the job requirements, generate an opening greeting and the first interview question.
 
 CANDIDATE'S CV:
 {cv_text}
 
 JOB DESCRIPTION:
-{jd_text if jd_text else "General software engineering role"}
+{jd_text if jd_text else "General software engineering role"}"""
+
+    prompt = f"""{context}
 
 SENIORITY LEVEL: {seniority}
 

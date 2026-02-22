@@ -23,11 +23,12 @@ This uses Replit AI Integrations for OpenAI access - no API key required. Charge
 ## Key Features
 - User authentication (register/login with hashed passwords)
 - Interview history saved per user in PostgreSQL
-- CV/Resume upload (PDF, Word, TXT)
-- Job description input (optional)
+- **Quick Start mode**: Enter role + seniority only (no CV/JD needed) — for demo/beta testing
+- **Full Setup mode**: CV/Resume upload (PDF, Word, TXT) + optional job description
+- Sidebar uses tabs: "⚡ Quick Start" (default) and "📄 Full Setup"
 - 1-question interview flow with instant scoring (0-10)
-- Audio TTS: Questions are read aloud automatically using browser Web Speech API
-- Audio STT: Users can record audio answers via microphone (transcribed by OpenAI Whisper)
+- Audio TTS: Questions are read aloud automatically using OpenAI gpt-audio with "nova" voice
+- Audio STT: Users can record audio answers via microphone (transcribed by OpenAI gpt-4o-mini-transcribe)
 - Comprehensive final feedback report with 7-day practice plan
 - Interview history viewer with full Q&A and reports
 

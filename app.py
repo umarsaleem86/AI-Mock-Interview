@@ -263,6 +263,8 @@ def init_session_state():
         'auto_speak_question': '',
         'recorder_version': 0,
         'has_recording': False,
+        'quick_start_role': '',
+        'setup_mode': 'quick',
     }
 
     for key, value in defaults.items():
@@ -364,55 +366,97 @@ def render_sidebar():
 def render_interview_sidebar():
     st.header("📄 Interview Setup")
 
-    uploaded_file = st.file_uploader(
-        "Upload CV/Resume (PDF, Word, TXT)",
-        type=['pdf', 'docx', 'txt'],
-        key='cv_upload'
-    )
+    quick_tab, full_tab = st.tabs(["⚡ Quick Start", "📄 Full Setup"])
 
-    if uploaded_file:
-        cv_text, error = parse_document(uploaded_file)
-        if error:
-            st.error(f"⚠️ {error}")
-        else:
-            st.session_state.cv_text = cv_text
-            st.success(f"✅ CV loaded ({len(cv_text.split())} words)")
+    with quick_tab:
+        st.markdown("*Enter a role to start instantly — no CV needed*")
 
-    st.divider()
+        quick_role = st.text_input(
+            "Job Role",
+            value=st.session_state.quick_start_role,
+            placeholder="e.g. Frontend Developer, Data Analyst..."
+        )
+        st.session_state.quick_start_role = quick_role
 
-    jd_text = st.text_area(
-        "Job Description (Optional)",
-        value=st.session_state.jd_text,
-        height=120,
-        placeholder="Paste job requirements here..."
-    )
-    st.session_state.jd_text = jd_text
+        seniority_q = st.selectbox(
+            "Seniority Level",
+            SENIORITY_LEVELS,
+            index=SENIORITY_LEVELS.index(st.session_state.seniority),
+            key="seniority_quick"
+        )
+        st.session_state.seniority = seniority_q
 
-    st.divider()
+        st.divider()
 
-    seniority = st.selectbox(
-        "Seniority Level",
-        SENIORITY_LEVELS,
-        index=SENIORITY_LEVELS.index(st.session_state.seniority)
-    )
-    st.session_state.seniority = seniority
+        col1, col2 = st.columns(2)
+        with col1:
+            quick_disabled = not quick_role.strip() or st.session_state.interview_started
+            if st.button("▶️ Start", disabled=quick_disabled, use_container_width=True, key="quick_start_btn"):
+                st.session_state.setup_mode = 'quick'
+                st.session_state.cv_text = f"Role: {quick_role.strip()}"
+                st.session_state.jd_text = f"{quick_role.strip()} position"
+                start_interview()
+        with col2:
+            if st.button("🔄 Restart", use_container_width=True, key="quick_restart_btn"):
+                reset_interview()
+                st.rerun()
 
-    st.divider()
+        if not quick_role.strip():
+            st.info("👆 Enter a job role to begin")
 
-    col1, col2 = st.columns(2)
+    with full_tab:
+        st.markdown("*Upload your CV for tailored questions*")
 
-    with col1:
-        start_disabled = not st.session_state.cv_text or st.session_state.interview_started
-        if st.button("▶️ Start", disabled=start_disabled, use_container_width=True):
-            start_interview()
+        uploaded_file = st.file_uploader(
+            "Upload CV/Resume (PDF, Word, TXT)",
+            type=['pdf', 'docx', 'txt'],
+            key='cv_upload'
+        )
 
-    with col2:
-        if st.button("🔄 Restart", use_container_width=True):
-            reset_interview()
-            st.rerun()
+        if uploaded_file:
+            cv_text, error = parse_document(uploaded_file)
+            if error:
+                st.error(f"⚠️ {error}")
+            else:
+                st.session_state.cv_text = cv_text
+                st.success(f"✅ CV loaded ({len(cv_text.split())} words)")
 
-    if not st.session_state.cv_text:
-        st.info("👆 Upload your CV to begin")
+        st.divider()
+
+        jd_text = st.text_area(
+            "Job Description (Optional)",
+            value=st.session_state.jd_text if st.session_state.setup_mode == 'full' else '',
+            height=120,
+            placeholder="Paste job requirements here..."
+        )
+        if jd_text:
+            st.session_state.jd_text = jd_text
+
+        st.divider()
+
+        seniority_f = st.selectbox(
+            "Seniority Level",
+            SENIORITY_LEVELS,
+            index=SENIORITY_LEVELS.index(st.session_state.seniority),
+            key="seniority_full"
+        )
+        st.session_state.seniority = seniority_f
+
+        st.divider()
+
+        col1, col2 = st.columns(2)
+        with col1:
+            start_disabled = not st.session_state.cv_text or st.session_state.interview_started
+            if st.button("▶️ Start", disabled=start_disabled, use_container_width=True, key="full_start_btn"):
+                st.session_state.setup_mode = 'full'
+                start_interview()
+        with col2:
+            if st.button("🔄 Restart", use_container_width=True, key="full_restart_btn"):
+                reset_interview()
+                st.rerun()
+
+        if not st.session_state.cv_text:
+            st.info("👆 Upload your CV to begin")
 
 
 def start_interview():
@@ -873,8 +917,8 @@ def render_interview_page():
         with col1:
             st.markdown("""
             **How it works:**
-            1. 📄 Upload your CV/Resume in the sidebar
-            2. 📝 Optionally paste the job description
+            1. ⚡ **Quick Start**: Enter a role + seniority in the sidebar
+            2. *Or* 📄 **Full Setup**: Upload CV + job description
             3. ▶️ Click "Start" to begin
             4. ✍️ Answer the interview question
             5. 📊 Get instant feedback and a final report
@@ -882,6 +926,7 @@ def render_interview_page():
         with col2:
             st.markdown("""
             **Features:**
+            - ⚡ **Quick Start**: No CV needed — just pick a role
             - 📈 **Instant Scoring**: 0-10 on your answer
             - 💡 **Pro Tips**: Actionable advice
             - 📋 **Final Report**: Feedback with practice plan
