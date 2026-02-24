@@ -11,7 +11,8 @@ import streamlit as st
 
 from audio_recorder_streamlit import audio_recorder
 
-from config import SENIORITY_LEVELS, TOTAL_QUESTIONS
+import pandas as pd
+from config import SENIORITY_LEVELS, TOTAL_QUESTIONS, ADMIN_USERNAME
 from utils.pdf_parser import parse_document
 from utils.voice import speech_to_text, text_to_speech
 from utils.interview_engine import (
@@ -19,7 +20,7 @@ from utils.interview_engine import (
     evaluate_answer_and_get_next,
     generate_final_report
 )
-from utils.db import init_db, create_user, verify_user, save_interview, get_user_interviews
+from utils.db import init_db, create_user, verify_user, save_interview, get_user_interviews, get_all_interviews_admin, get_all_users_admin
 
 
 def inject_custom_css():
@@ -342,6 +343,8 @@ def render_sidebar():
     with st.sidebar:
         st.markdown(f"### 👤 {st.session_state.username}")
 
+        is_admin = st.session_state.username == ADMIN_USERNAME
+
         col_nav1, col_nav2 = st.columns(2)
         with col_nav1:
             if st.button("🎯 Interview", use_container_width=True):
@@ -350,6 +353,11 @@ def render_sidebar():
         with col_nav2:
             if st.button("📜 History", use_container_width=True):
                 st.session_state.page = 'history'
+                st.rerun()
+
+        if is_admin:
+            if st.button("🛠️ Admin Dashboard", use_container_width=True):
+                st.session_state.page = 'admin'
                 st.rerun()
 
         if st.button("🚪 Logout", use_container_width=True):
@@ -998,6 +1006,270 @@ def render_history_page():
                 st.markdown(interview["report"])
 
 
+def render_admin_page():
+    st.markdown('<h1 style="margin-bottom: 0;"><span style="font-size: 1.1em;">🛠️</span> Admin Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="color: #8bb8d9; font-size: 1.1rem;">Platform analytics, user insights, and data export</p>', unsafe_allow_html=True)
+    st.markdown("---")
+
+    all_interviews = get_all_interviews_admin()
+    all_users = get_all_users_admin()
+
+    if not all_interviews:
+        st.info("No interview data found yet.")
+        return
+
+    for iv in all_interviews:
+        for field in ["questions", "answers", "scores", "tips", "justifications"]:
+            raw = iv[field]
+            if isinstance(raw, str):
+                try:
+                    iv[field] = json.loads(raw)
+                except Exception:
+                    iv[field] = []
+            elif raw is None:
+                iv[field] = []
+
+    total_users = len(all_users)
+    total_interviews = len(all_interviews)
+    scores_flat = [iv["avg_score"] for iv in all_interviews if iv["avg_score"] is not None]
+    platform_avg = round(sum(scores_flat) / len(scores_flat), 2) if scores_flat else 0
+
+    from datetime import datetime, timedelta, timezone as tz_module
+    now_utc = datetime.now(tz_module.utc)
+    week_ago = now_utc - timedelta(days=7)
+    interviews_this_week = sum(
+        1 for iv in all_interviews
+        if iv["created_at"] and (
+            iv["created_at"].replace(tzinfo=tz_module.utc) if iv["created_at"].tzinfo is None else iv["created_at"]
+        ) >= week_ago
+    )
+
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        st.metric("Total Users", total_users)
+    with m2:
+        st.metric("Total Interviews", total_interviews)
+    with m3:
+        st.metric("Platform Avg Score", f"{platform_avg}/10")
+    with m4:
+        st.metric("Interviews This Week", interviews_this_week)
+
+    st.markdown("---")
+
+    col_left, col_right = st.columns(2)
+
+    with col_left:
+        st.subheader("Score Distribution")
+        buckets = {"0-4": 0, "4-6": 0, "6-8": 0, "8-10": 0}
+        for s in scores_flat:
+            if s < 4:
+                buckets["0-4"] += 1
+            elif s < 6:
+                buckets["4-6"] += 1
+            elif s < 8:
+                buckets["6-8"] += 1
+            else:
+                buckets["8-10"] += 1
+        score_df = pd.DataFrame({"Score Range": list(buckets.keys()), "Interviews": list(buckets.values())})
+        score_df = score_df.set_index("Score Range")
+        st.bar_chart(score_df)
+
+    with col_right:
+        st.subheader("Seniority Breakdown")
+        seniority_counts = {}
+        for iv in all_interviews:
+            s = iv["seniority"] or "Unknown"
+            seniority_counts[s] = seniority_counts.get(s, 0) + 1
+        sen_df = pd.DataFrame({"Seniority": list(seniority_counts.keys()), "Interviews": list(seniority_counts.values())})
+        sen_df = sen_df.set_index("Seniority")
+        st.bar_chart(sen_df)
+
+    st.markdown("---")
+    st.subheader("Interviews Over Time (Daily)")
+    dates = []
+    for iv in all_interviews:
+        if iv["created_at"]:
+            dt = iv["created_at"]
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=tz_module.utc)
+            dates.append(dt.date())
+    if dates:
+        date_counts = {}
+        for d in dates:
+            date_counts[d] = date_counts.get(d, 0) + 1
+        sorted_dates = sorted(date_counts.keys())
+        timeline_df = pd.DataFrame({"Date": sorted_dates, "Interviews": [date_counts[d] for d in sorted_dates]})
+        timeline_df = timeline_df.set_index("Date")
+        st.line_chart(timeline_df)
+
+    st.markdown("---")
+    st.subheader("Average Score Over Time (7-Day Rolling)")
+    if len(all_interviews) >= 2:
+        score_date_rows = []
+        for iv in all_interviews:
+            if iv["created_at"] and iv["avg_score"] is not None:
+                dt = iv["created_at"]
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=tz_module.utc)
+                score_date_rows.append({"Date": dt.date(), "avg_score": iv["avg_score"]})
+        if score_date_rows:
+            score_time_df = pd.DataFrame(score_date_rows).sort_values("Date")
+            score_time_df = score_time_df.groupby("Date")["avg_score"].mean().reset_index()
+            score_time_df["7-Day Rolling Avg"] = score_time_df["avg_score"].rolling(7, min_periods=1).mean().round(2)
+            score_time_df = score_time_df.set_index("Date")[["7-Day Rolling Avg"]]
+            st.line_chart(score_time_df)
+
+    st.markdown("---")
+    st.subheader("Top Roles Practiced")
+    role_counts = {}
+    for iv in all_interviews:
+        cv = iv.get("cv_text") or ""
+        if cv.startswith("Role: "):
+            role = cv.replace("Role: ", "").strip()
+        else:
+            role = "Custom CV"
+        role_counts[role] = role_counts.get(role, 0) + 1
+    sorted_roles = sorted(role_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    if sorted_roles:
+        role_df = pd.DataFrame(sorted_roles, columns=["Role", "Interviews"]).set_index("Role")
+        st.bar_chart(role_df)
+
+    st.markdown("---")
+    st.subheader("User Summary")
+    user_rows = []
+    for u in all_users:
+        user_rows.append({
+            "Username": u["username"],
+            "Joined": u["created_at"].strftime("%Y-%m-%d") if u["created_at"] else "",
+            "Interviews": int(u["interview_count"] or 0),
+            "Avg Score": float(u["avg_score"]) if u["avg_score"] is not None else None,
+        })
+    user_summary_df = pd.DataFrame(user_rows)
+    st.dataframe(user_summary_df, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    st.subheader("All Interviews")
+
+    filter_user = st.text_input("Filter by username", placeholder="Type to filter...")
+    filter_seniority = st.selectbox("Filter by seniority", ["All"] + SENIORITY_LEVELS)
+
+    filtered = all_interviews
+    if filter_user.strip():
+        filtered = [iv for iv in filtered if filter_user.strip().lower() in iv["username"].lower()]
+    if filter_seniority != "All":
+        filtered = [iv for iv in filtered if iv["seniority"] == filter_seniority]
+
+    st.caption(f"Showing {len(filtered)} of {total_interviews} interviews")
+
+    for i, iv in enumerate(filtered):
+        created_str = iv["created_at"].strftime("%Y-%m-%d %H:%M") if iv["created_at"] else "Unknown"
+        avg = iv["avg_score"] or 0
+        label = f"**{iv['username']}** — {created_str} — {iv['seniority']} — Score: {avg:.1f}/10"
+        with st.expander(label, expanded=False):
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.metric("Score", f"{avg:.1f}/10")
+            with c2:
+                st.metric("Seniority", iv["seniority"] or "N/A")
+            with c3:
+                performance = "Excellent" if avg >= 8 else "Good" if avg >= 6 else "Needs Work"
+                st.metric("Performance", performance)
+
+            cv = iv.get("cv_text") or ""
+            if cv.startswith("Role: "):
+                st.markdown(f"**Role (Quick Start):** {cv.replace('Role: ', '').strip()}")
+            else:
+                with st.expander("View CV Text"):
+                    st.text(cv[:1000] + ("..." if len(cv) > 1000 else ""))
+
+            jd = iv.get("jd_text") or ""
+            if jd and not jd.endswith("position"):
+                with st.expander("View Job Description"):
+                    st.text(jd[:500] + ("..." if len(jd) > 500 else ""))
+
+            st.markdown("---")
+            questions = iv["questions"] or []
+            answers = iv["answers"] or []
+            scores = iv["scores"] or []
+            tips = iv["tips"] or []
+
+            for j in range(len(questions)):
+                st.markdown(f"**Q{j+1}:** {questions[j]}")
+                if j < len(answers):
+                    st.markdown(f"**Answer:** {answers[j]}")
+                if j < len(scores):
+                    st.markdown(f"**Score:** {scores[j]}/10")
+                if j < len(tips):
+                    st.markdown(f"💡 **Tip:** {tips[j]}")
+                if j < len(questions) - 1:
+                    st.markdown("---")
+
+            if iv.get("report"):
+                st.markdown("---")
+                st.markdown("**Final Report:**")
+                st.markdown(iv["report"])
+
+    st.markdown("---")
+    st.subheader("Export Data")
+
+    col_exp1, col_exp2 = st.columns(2)
+
+    with col_exp1:
+        st.markdown("**Summary Export** — One row per interview")
+        summary_rows = []
+        for iv in all_interviews:
+            summary_rows.append({
+                "interview_id": iv["id"],
+                "username": iv["username"],
+                "date": iv["created_at"].strftime("%Y-%m-%d %H:%M") if iv["created_at"] else "",
+                "seniority": iv["seniority"],
+                "avg_score": iv["avg_score"],
+                "performance": "Excellent" if (iv["avg_score"] or 0) >= 8 else "Good" if (iv["avg_score"] or 0) >= 6 else "Needs Work",
+                "role": (iv.get("cv_text") or "").replace("Role: ", "").strip() if (iv.get("cv_text") or "").startswith("Role: ") else "Custom CV",
+                "has_report": bool(iv.get("report")),
+            })
+        summary_df = pd.DataFrame(summary_rows)
+        csv_summary = summary_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Download Summary CSV",
+            data=csv_summary,
+            file_name="interviews_summary.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+    with col_exp2:
+        st.markdown("**Full Q&A Export** — One row per question/answer")
+        qa_rows = []
+        for iv in all_interviews:
+            questions = iv["questions"] or []
+            answers = iv["answers"] or []
+            scores = iv["scores"] or []
+            tips = iv["tips"] or []
+            for j in range(len(questions)):
+                qa_rows.append({
+                    "interview_id": iv["id"],
+                    "username": iv["username"],
+                    "date": iv["created_at"].strftime("%Y-%m-%d %H:%M") if iv["created_at"] else "",
+                    "seniority": iv["seniority"],
+                    "avg_score": iv["avg_score"],
+                    "question_num": j + 1,
+                    "question": questions[j] if j < len(questions) else "",
+                    "answer": answers[j] if j < len(answers) else "",
+                    "score": scores[j] if j < len(scores) else "",
+                    "tip": tips[j] if j < len(tips) else "",
+                })
+        qa_df = pd.DataFrame(qa_rows)
+        csv_qa = qa_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Download Full Q&A CSV",
+            data=csv_qa,
+            file_name="interviews_full_qa.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+
 def render_interview_page():
     st.markdown('<h1 style="margin-bottom: 0;"><span style="font-size: 1.1em;">🎯</span> AI Mock Interview</h1>', unsafe_allow_html=True)
     st.markdown('<p style="color: #8bb8d9; font-size: 1.1rem;">Practice your interview skills with AI-powered coaching</p>', unsafe_allow_html=True)
@@ -1056,6 +1328,8 @@ def main():
 
     if st.session_state.page == 'history':
         render_history_page()
+    elif st.session_state.page == 'admin' and st.session_state.username == ADMIN_USERNAME:
+        render_admin_page()
     else:
         render_interview_page()
 

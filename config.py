@@ -18,3 +18,5 @@ TOTAL_QUESTIONS = 5
 SENIORITY_LEVELS = ["Junior", "Mid", "Senior"]
 
 DEMO_MODE = False
+
+ADMIN_USERNAME = "admin"

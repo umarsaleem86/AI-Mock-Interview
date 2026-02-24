@@ -124,6 +124,47 @@ def save_interview(user_id: int, seniority: str, demo_mode: bool, cv_text: str, 
         return {"success": False, "error": str(e)}
 
 
+def get_all_interviews_admin() -> list:
+    try:
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT i.id, u.username, i.created_at, i.seniority, i.demo_mode,
+                   i.cv_text, i.jd_text, i.questions, i.answers, i.scores,
+                   i.tips, i.justifications, i.report, i.avg_score
+            FROM interviews i
+            JOIN users u ON i.user_id = u.id
+            ORDER BY i.created_at DESC
+        """)
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        return rows
+    except Exception:
+        return []
+
+
+def get_all_users_admin() -> list:
+    try:
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT u.id, u.username, u.created_at,
+                   COUNT(i.id) AS interview_count,
+                   ROUND(AVG(i.avg_score)::numeric, 2) AS avg_score
+            FROM users u
+            LEFT JOIN interviews i ON i.user_id = u.id
+            GROUP BY u.id, u.username, u.created_at
+            ORDER BY u.created_at DESC
+        """)
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        return rows
+    except Exception:
+        return []
+
+
 def get_user_interviews(user_id: int) -> list:
     try:
         conn = get_connection()

@@ -70,6 +70,22 @@ The app uses `st.session_state` to manage:
 - `auto_speak_question`: Text of question to auto-speak on next render
 - `report_generated`, `report_text`: Final report data
 
+## Admin Dashboard
+Accessible only when logged in as the admin user (username = `admin`, configurable via `ADMIN_USERNAME` in `config.py`).
+
+Features:
+- **Key Metrics**: Total users, total interviews, platform avg score, interviews this week
+- **Score Distribution**: Bar chart (0-4, 4-6, 6-8, 8-10 buckets)
+- **Seniority Breakdown**: Bar chart by Junior/Mid/Senior
+- **Interviews Over Time**: Daily line chart
+- **Rolling Avg Score**: 7-day rolling average line chart
+- **Top Roles**: Bar chart of most practiced job roles
+- **User Summary**: Table of all users with interview count and avg score
+- **All Interviews**: Filterable list (by username and seniority) with full Q&A and report drill-down
+- **CSV Export**: Two exports — Summary (one row per interview) and Full Q&A (one row per question)
+
+DB functions: `get_all_interviews_admin()` and `get_all_users_admin()` in `utils/db.py`
+
 ## User Preferences
 - 5 questions per interview (TOTAL_QUESTIONS = 5)
 - "Finish Interview" button appears after question 3 so user can end early
