@@ -660,14 +660,14 @@ def render_response_input():
 
     st.markdown("---")
 
-    if st.session_state.current_question_index >= 3 and len(st.session_state.answers) >= 3:
+    if len(st.session_state.answers) >= 1:
         if st.button("🏁 Finish Interview", use_container_width=True, 
                      key=f"finish_interview_{st.session_state.current_question_index}"):
             st.session_state.interview_completed = True
             st.session_state.awaiting_answer = False
             st.session_state.messages.append({
                 'role': 'assistant',
-                'content': f"🎉 **Interview Finished Early!** You answered {len(st.session_state.answers)} out of {TOTAL_QUESTIONS} questions. Click 'Generate Performance Report' below to get your detailed report."
+                'content': f"🎉 **Interview Finished!** You answered {len(st.session_state.answers)} out of {TOTAL_QUESTIONS} questions. Click 'Generate Performance Report' below to get your detailed report."
             })
             st.rerun()
 
