@@ -710,8 +710,6 @@ def render_response_input():
             finish_interview_button(f"finish_text_{st.session_state.current_question_index}")
 
     with tab_voice:
-        st.markdown('<p style="color: #c3cfe2; margin-bottom: 4px;">Click the microphone to record (up to 30 seconds). Click again to stop.</p>', unsafe_allow_html=True)
-
         st.markdown("""
         <style>
         @keyframes recPulse {
@@ -729,28 +727,13 @@ def render_response_input():
         <script>
         (function() {
             function watchRecorder() {
-                const indicator = document.getElementById('recording-indicator');
-                if (!indicator) { setTimeout(watchRecorder, 500); return; }
-                const observer = new MutationObserver(() => {
-                    const recBtn = document.querySelector('[data-testid="stAudioRecorder"] button, .audio-recorder-component button, iframe[title*="audio"]');
-                    if (!recBtn) {
-                        const iframes = document.querySelectorAll('iframe');
-                        iframes.forEach(iframe => {
-                            try {
-                                const doc = iframe.contentDocument;
-                                if (doc) {
-                                    const svg = doc.querySelector('svg[style*="red"], svg[fill="red"], .recording');
-                                    if (svg) indicator.style.display = 'flex';
-                                }
-                            } catch(e) {}
-                        });
-                    }
-                });
-                observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+                const startLabel = document.getElementById('mic-label-start');
+                const recLabel = document.getElementById('mic-label-recording');
+                if (!startLabel || !recLabel) { setTimeout(watchRecorder, 500); return; }
 
                 setInterval(() => {
-                    const allSvgs = document.querySelectorAll('svg');
                     let isRecording = false;
+                    const allSvgs = document.querySelectorAll('svg');
                     allSvgs.forEach(svg => {
                         const fill = svg.getAttribute('fill') || '';
                         const style = svg.getAttribute('style') || '';
@@ -762,26 +745,35 @@ def render_response_input():
                     iframes.forEach(iframe => {
                         try {
                             const doc = iframe.contentDocument || iframe.contentWindow.document;
-                            const recSvgs = doc.querySelectorAll('svg');
-                            recSvgs.forEach(svg => {
+                            doc.querySelectorAll('svg').forEach(svg => {
                                 const fill = svg.getAttribute('fill') || '';
                                 if (fill.includes('#e74c3c') || fill === 'red') isRecording = true;
                             });
                         } catch(e) {}
                     });
-                    indicator.style.display = isRecording ? 'flex' : 'none';
+                    startLabel.style.display = isRecording ? 'none' : 'flex';
+                    recLabel.style.display = isRecording ? 'flex' : 'none';
                 }, 300);
             }
             if (document.readyState === 'complete') watchRecorder();
             else window.addEventListener('load', watchRecorder);
         })();
         </script>
-        <div id="recording-indicator" style="display: none; align-items: center; gap: 12px; padding: 14px 18px;
+
+        <div id="mic-label-start" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+            background: rgba(25,118,210,0.1); border: 1px solid rgba(41,182,246,0.3);
+            border-radius: 10px; margin: 8px 0;">
+            <span style="font-size: 1.2rem;">🎙️</span>
+            <span style="color: #b0d4f1; font-weight: 600; font-size: 1rem;">Start recording your answer</span>
+            <span style="color: #6a9ec0; font-size: 0.85rem; margin-left: auto;">Up to 30 seconds</span>
+        </div>
+
+        <div id="mic-label-recording" style="display: none; align-items: center; gap: 10px; padding: 12px 16px;
             background: linear-gradient(135deg, rgba(231,76,60,0.15), rgba(192,57,43,0.15));
-            border: 1px solid rgba(231,76,60,0.4); border-radius: 12px; margin: 8px 0;">
+            border: 1px solid rgba(231,76,60,0.4); border-radius: 10px; margin: 8px 0;">
             <div style="width: 12px; height: 12px; border-radius: 50%; background: #e74c3c;
                 animation: recPulse 1s ease-in-out infinite;"></div>
-            <span style="color: #e74c3c; font-weight: 600; font-size: 1rem;">Recording in progress...</span>
+            <span style="color: #e74c3c; font-weight: 700; font-size: 1rem;">Finish recording your answer</span>
             <div style="display: flex; align-items: center; gap: 3px; margin-left: 8px;">
                 <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out infinite;"></div>
                 <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out 0.1s infinite;"></div>
@@ -789,7 +781,7 @@ def render_response_input():
                 <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out 0.3s infinite;"></div>
                 <div style="width: 3px; background: #e74c3c; border-radius: 2px; animation: recBarAnim 0.8s ease-in-out 0.4s infinite;"></div>
             </div>
-            <span style="color: #f5b7b1; font-size: 0.85rem; margin-left: auto;">Speak clearly into your microphone</span>
+            <span style="color: #f5b7b1; font-size: 0.85rem; margin-left: auto;">Click mic to stop</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -860,13 +852,6 @@ def render_response_input():
             if len(st.session_state.answers) >= 1:
                 finish_interview_button(f"finish_voice_rec_{st.session_state.current_question_index}")
         else:
-            st.markdown("""
-            <div style="color: #8bb8d9; font-size: 0.9rem; padding: 8px 0;">
-                🎙️ Press the microphone above to start. The button turns 
-                <span style="color: #e74c3c; font-weight: 600;">red</span> while recording.
-            </div>
-            """, unsafe_allow_html=True)
-
             st.button("📤 Submit Audio Answer", type="primary", use_container_width=True, disabled=True,
                       key=f"audio_submit_disabled_{st.session_state.current_question_index}_{len(st.session_state.answers)}")
 
