@@ -71,7 +71,8 @@ The app uses `st.session_state` to manage:
 - `report_generated`, `report_text`: Final report data
 
 ## User Preferences
-- 1 question per interview (TOTAL_QUESTIONS = 1)
+- 5 questions per interview (TOTAL_QUESTIONS = 5)
+- "Finish Interview" button appears after question 3 so user can end early
 - No Demo Mode toggle - always use real AI
 - Questions must be read aloud automatically
 - Users must be able to record audio answers

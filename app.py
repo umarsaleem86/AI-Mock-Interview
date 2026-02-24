@@ -536,7 +536,8 @@ def process_answer(transcription: str):
                     "Can you describe a challenging technical problem you solved and what approach you took?",
                     "Tell me about a time you had to work under a tight deadline. How did you handle it?",
                     "What is your approach to learning new technologies or tools?",
-                    "Describe a situation where you had a disagreement with a team member. How did you resolve it?"
+                    "Describe a situation where you had a disagreement with a team member. How did you resolve it?",
+                    "How do you prioritize tasks when you have multiple competing deadlines?"
                 ]
                 q_idx = st.session_state.current_question_index % len(fallback_questions)
                 next_question = fallback_questions[q_idx]
@@ -549,7 +550,7 @@ def process_answer(transcription: str):
         else:
             st.session_state.interview_completed = True
             st.session_state.awaiting_answer = False
-            feedback_message += "\n\n---\n\n🎉 **Interview Complete!** Click 'Generate Feedback' below to get your detailed report."
+            feedback_message += "\n\n---\n\n🎉 **Interview Complete!** Click 'Generate Performance Report' below to get your detailed report."
 
         st.session_state.messages.append({
             'role': 'assistant',
@@ -581,29 +582,55 @@ def render_chat():
                         st.audio(st.session_state[audio_key], format="audio/wav")
                     else:
                         if st.button("🔊 Listen to Question", key=f"listen_{question_idx}"):
-                            with st.spinner("Generating audio..."):
-                                audio_bytes, error = text_to_speech(q_text)
-                                if audio_bytes:
-                                    st.session_state[audio_key] = audio_bytes
-                                    st.rerun()
-                                else:
-                                    st.error(f"Could not generate audio: {error}")
+                            st.markdown("""
+                            <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; margin-top: 4px;
+                                background: rgba(25,118,210,0.1); border-radius: 8px;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: #29b6f6;
+                                    animation: pulse 1s ease-in-out infinite alternate;"></div>
+                                <span style="color: #b0d4f1; font-size: 0.9rem;">Generating audio...</span>
+                            </div>
+                            <style>@keyframes pulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }</style>
+                            """, unsafe_allow_html=True)
+                            audio_bytes, error = text_to_speech(q_text)
+                            if audio_bytes:
+                                st.session_state[audio_key] = audio_bytes
+                                st.rerun()
+                            else:
+                                st.error(f"Could not generate audio: {error}")
                     question_idx += 1
 
     if st.session_state.auto_speak_question:
         question_text = st.session_state.auto_speak_question
         st.session_state.auto_speak_question = ''
-        with st.spinner("Generating question audio..."):
-            audio_bytes, error = text_to_speech(question_text)
-            if audio_bytes:
-                cache_idx = len(st.session_state.questions) - 1
-                cache_key = f"tts_cache_{cache_idx}"
-                st.session_state[cache_key] = audio_bytes
-                audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-                st.components.v1.html(
-                    f'<audio autoplay src="data:audio/wav;base64,{audio_b64}"></audio>',
-                    height=0
-                )
+        st.markdown("""
+        <div style="display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+            background: rgba(25,118,210,0.1); border-radius: 8px; margin: 8px 0;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #29b6f6;
+                animation: pulse 1s ease-in-out infinite alternate;"></div>
+            <span style="color: #b0d4f1; font-size: 0.9rem;">Generating question audio...</span>
+        </div>
+        <style>@keyframes pulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }</style>
+        """, unsafe_allow_html=True)
+        audio_bytes, error = text_to_speech(question_text)
+        if audio_bytes:
+            cache_idx = len(st.session_state.questions) - 1
+            cache_key = f"tts_cache_{cache_idx}"
+            st.session_state[cache_key] = audio_bytes
+            audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+            st.components.v1.html(
+                f"""<script>
+                (function() {{
+                    var audio = new Audio("data:audio/wav;base64,{audio_b64}");
+                    audio.play().catch(function() {{
+                        document.addEventListener('click', function handler() {{
+                            audio.play();
+                            document.removeEventListener('click', handler);
+                        }}, {{once: true}});
+                    }});
+                }})();
+                </script>""",
+                height=0
+            )
 
 
 def render_response_input():
@@ -632,6 +659,18 @@ def render_response_input():
         return
 
     st.markdown("---")
+
+    if st.session_state.current_question_index >= 3 and len(st.session_state.answers) >= 3:
+        if st.button("🏁 Finish Interview", use_container_width=True, 
+                     key=f"finish_interview_{st.session_state.current_question_index}"):
+            st.session_state.interview_completed = True
+            st.session_state.awaiting_answer = False
+            st.session_state.messages.append({
+                'role': 'assistant',
+                'content': f"🎉 **Interview Finished Early!** You answered {len(st.session_state.answers)} out of {TOTAL_QUESTIONS} questions. Click 'Generate Performance Report' below to get your detailed report."
+            })
+            st.rerun()
+
     st.markdown(f"### ✍️ Your Response — Question {st.session_state.current_question_index} of {TOTAL_QUESTIONS}")
 
     answer_key = f"answer_{st.session_state.current_question_index}_{len(st.session_state.answers)}"
@@ -651,8 +690,18 @@ def render_response_input():
 
         if st.button("📤 Submit Answer", type="primary", key=submit_key):
             if text_answer.strip():
-                with st.spinner("Evaluating your response..."):
-                    process_answer(text_answer)
+                st.session_state.processing = True
+                st.markdown("""
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; margin-top: 8px;
+                    background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15));
+                    border: 1px solid rgba(41,182,246,0.3); border-radius: 10px;">
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #29b6f6;
+                        animation: pulse 1s ease-in-out infinite alternate;"></div>
+                    <span style="color: #b0d4f1; font-weight: 500;">Evaluating your response...</span>
+                </div>
+                <style>@keyframes pulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }</style>
+                """, unsafe_allow_html=True)
+                process_answer(text_answer)
                 st.rerun()
             else:
                 st.warning("Please enter your answer before submitting.")
@@ -849,42 +898,51 @@ def render_final_report():
         return
 
     if st.button("📊 Generate Performance Report", type="primary", use_container_width=True):
-        with st.spinner("Analyzing your interview performance..."):
-            try:
-                report = generate_final_report(
-                    st.session_state.cv_text,
-                    st.session_state.jd_text,
-                    st.session_state.seniority,
-                    st.session_state.questions,
-                    st.session_state.answers,
-                    st.session_state.scores,
-                    st.session_state.tips,
-                    demo_mode=False
-                )
+        st.markdown("""
+        <div style="display: flex; align-items: center; gap: 10px; padding: 14px 18px; margin-top: 8px;
+            background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15));
+            border: 1px solid rgba(41,182,246,0.3); border-radius: 10px;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #29b6f6;
+                animation: pulse 1s ease-in-out infinite alternate;"></div>
+            <span style="color: #b0d4f1; font-weight: 500;">Analyzing your interview performance...</span>
+        </div>
+        <style>@keyframes pulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }</style>
+        """, unsafe_allow_html=True)
+        try:
+            report = generate_final_report(
+                st.session_state.cv_text,
+                st.session_state.jd_text,
+                st.session_state.seniority,
+                st.session_state.questions,
+                st.session_state.answers,
+                st.session_state.scores,
+                st.session_state.tips,
+                demo_mode=False
+            )
 
-                st.session_state.report_generated = True
-                st.session_state.report_text = report
+            st.session_state.report_generated = True
+            st.session_state.report_text = report
 
-                avg_score = sum(st.session_state.scores) / len(st.session_state.scores)
-                save_interview(
-                    user_id=st.session_state.user_id,
-                    seniority=st.session_state.seniority,
-                    demo_mode=False,
-                    cv_text=st.session_state.cv_text,
-                    jd_text=st.session_state.jd_text,
-                    questions=st.session_state.questions,
-                    answers=st.session_state.answers,
-                    scores=st.session_state.scores,
-                    tips=st.session_state.tips,
-                    justifications=st.session_state.justifications,
-                    report=report,
-                    avg_score=avg_score
-                )
+            avg_score = sum(st.session_state.scores) / len(st.session_state.scores)
+            save_interview(
+                user_id=st.session_state.user_id,
+                seniority=st.session_state.seniority,
+                demo_mode=False,
+                cv_text=st.session_state.cv_text,
+                jd_text=st.session_state.jd_text,
+                questions=st.session_state.questions,
+                answers=st.session_state.answers,
+                scores=st.session_state.scores,
+                tips=st.session_state.tips,
+                justifications=st.session_state.justifications,
+                report=report,
+                avg_score=avg_score
+            )
 
-                st.rerun()
+            st.rerun()
 
-            except Exception as e:
-                st.error(f"Failed to generate report: {str(e)}")
+        except Exception as e:
+            st.error(f"Failed to generate report: {str(e)}")
 
 
 def get_user_timezone():

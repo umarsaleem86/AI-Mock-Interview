@@ -13,7 +13,7 @@ OPENAI_MODEL = "gpt-5-mini"
 # Voice settings - using gpt-audio for TTS and STT
 TTS_VOICE = "nova"
 
-TOTAL_QUESTIONS = 1
+TOTAL_QUESTIONS = 5
 
 SENIORITY_LEVELS = ["Junior", "Mid", "Senior"]
 
