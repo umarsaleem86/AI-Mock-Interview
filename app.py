@@ -633,6 +633,17 @@ def render_chat():
             )
 
 
+def finish_interview_button(key: str):
+    if st.button("🏁 Finish Interview", use_container_width=True, type="primary", key=key):
+        st.session_state.interview_completed = True
+        st.session_state.awaiting_answer = False
+        st.session_state.messages.append({
+            'role': 'assistant',
+            'content': f"🎉 **Interview Finished!** You answered {len(st.session_state.answers)} out of {TOTAL_QUESTIONS} questions. Click 'Generate Performance Report' below to get your detailed report."
+        })
+        st.rerun()
+
+
 def render_response_input():
     if st.session_state.processing:
         st.markdown("---")
@@ -660,17 +671,6 @@ def render_response_input():
 
     st.markdown("---")
 
-    if len(st.session_state.answers) >= 1:
-        if st.button("🏁 Finish Interview", use_container_width=True, 
-                     key=f"finish_interview_{st.session_state.current_question_index}"):
-            st.session_state.interview_completed = True
-            st.session_state.awaiting_answer = False
-            st.session_state.messages.append({
-                'role': 'assistant',
-                'content': f"🎉 **Interview Finished!** You answered {len(st.session_state.answers)} out of {TOTAL_QUESTIONS} questions. Click 'Generate Performance Report' below to get your detailed report."
-            })
-            st.rerun()
-
     st.markdown(f"### ✍️ Your Response — Question {st.session_state.current_question_index} of {TOTAL_QUESTIONS}")
 
     answer_key = f"answer_{st.session_state.current_question_index}_{len(st.session_state.answers)}"
@@ -688,7 +688,7 @@ def render_response_input():
 
         submit_key = f"submit_{st.session_state.current_question_index}_{len(st.session_state.answers)}"
 
-        if st.button("📤 Submit Answer", type="primary", key=submit_key):
+        if st.button("📤 Submit Answer", type="primary", key=submit_key, use_container_width=True):
             if text_answer.strip():
                 st.session_state.processing = True
                 st.markdown("""
@@ -705,6 +705,9 @@ def render_response_input():
                 st.rerun()
             else:
                 st.warning("Please enter your answer before submitting.")
+
+        if len(st.session_state.answers) >= 1:
+            finish_interview_button(f"finish_text_{st.session_state.current_question_index}")
 
     with tab_voice:
         st.markdown('<p style="color: #c3cfe2; margin-bottom: 4px;">Click the microphone to record (up to 30 seconds). Click again to stop.</p>', unsafe_allow_html=True)
@@ -853,6 +856,9 @@ def render_response_input():
                     st.session_state.has_recording = False
                     st.session_state.recorded_audio = None
                     st.rerun()
+
+            if len(st.session_state.answers) >= 1:
+                finish_interview_button(f"finish_voice_rec_{st.session_state.current_question_index}")
         else:
             st.markdown("""
             <div style="color: #8bb8d9; font-size: 0.9rem; padding: 8px 0;">
@@ -863,6 +869,9 @@ def render_response_input():
 
             st.button("📤 Submit Audio Answer", type="primary", use_container_width=True, disabled=True,
                       key=f"audio_submit_disabled_{st.session_state.current_question_index}_{len(st.session_state.answers)}")
+
+            if len(st.session_state.answers) >= 1:
+                finish_interview_button(f"finish_voice_{st.session_state.current_question_index}")
 
 
 def render_final_report():
