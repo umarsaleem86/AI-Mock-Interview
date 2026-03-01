@@ -29,14 +29,20 @@ def inject_custom_css():
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
     :root {
-        --text-primary: #1a1a2e;
-        --text-secondary: #555;
-        --text-accent: #1565c0;
-        --text-loading: #1976d2;
-        --text-body: #333;
-        --text-hero-title: #2c3e50;
-        --text-hero-body: #555;
-        --text-mic-idle: #1976d2;
+        --text-primary: #e0eafc;
+        --text-secondary: #8ba4c4;
+        --text-accent: #4fc3f7;
+        --text-loading: #5ec4f7;
+        --text-body: #b0c8e8;
+        --text-hero-title: #f0f4ff;
+        --text-hero-body: #a0b8d8;
+        --text-mic-idle: #5ec4f7;
+        --bg-card: rgba(15,30,60,0.6);
+        --border-glow: rgba(79,195,247,0.2);
+        --neon-blue: #4fc3f7;
+        --neon-purple: #7c4dff;
+        --deep-bg: #060d1f;
+        --sidebar-bg: #0a1428;
     }
 
     @keyframes gradientShift {
@@ -47,24 +53,41 @@ def inject_custom_css():
         100% { background-position: 0% 50%; }
     }
 
+    @keyframes neonPulse {
+        0% { box-shadow: 0 0 5px rgba(79,195,247,0.3), 0 0 15px rgba(79,195,247,0.1); }
+        50% { box-shadow: 0 0 10px rgba(79,195,247,0.5), 0 0 30px rgba(79,195,247,0.2); }
+        100% { box-shadow: 0 0 5px rgba(79,195,247,0.3), 0 0 15px rgba(79,195,247,0.1); }
+    }
+
+    @keyframes titleGlow {
+        0% { text-shadow: 0 0 10px rgba(79,195,247,0.3); background-position: 0% 50%; }
+        50% { text-shadow: 0 0 20px rgba(79,195,247,0.5); background-position: 100% 50%; }
+        100% { text-shadow: 0 0 10px rgba(79,195,247,0.3); background-position: 0% 50%; }
+    }
+
     .stApp {
-        background: linear-gradient(135deg, #f0f4f8, #e8eef5, #f5f7fa);
+        background: radial-gradient(ellipse at 20% 50%, #0d1b3e 0%, #060d1f 50%, #030810 100%);
     }
 
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #e8eef5, #dce5f0, #e2eaf3);
-        border-right: 1px solid rgba(0,0,0,0.08);
+        background: linear-gradient(180deg, #0c1a32 0%, #091428 40%, #0b1830 100%);
+        border-right: 1px solid rgba(79,195,247,0.12);
+        box-shadow: 2px 0 20px rgba(0,0,0,0.5);
     }
 
     [data-testid="stSidebar"] * {
-        color: #1a1a2e !important;
+        color: #c8ddf5 !important;
     }
 
     h1 {
-        color: #1565c0 !important;
+        background: linear-gradient(135deg, #4fc3f7, #29b6f6, #81d4fa, #b3e5fc, #4fc3f7);
+        background-size: 300% 100%;
+        animation: titleGlow 4s ease infinite;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         font-weight: 700 !important;
         font-size: 2.5rem !important;
-        -webkit-text-fill-color: #1565c0 !important;
     }
 
     h1 span {
@@ -72,14 +95,15 @@ def inject_custom_css():
     }
 
     h2, h3 {
-        color: #1a1a2e !important;
+        color: #c8ddf5 !important;
     }
 
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background: rgba(0,0,0,0.04);
-        border-radius: 12px;
-        padding: 6px;
+        gap: 4px;
+        background: rgba(10,25,55,0.7);
+        border-radius: 14px;
+        padding: 4px;
+        border: 1px solid rgba(79,195,247,0.12);
     }
 
     .stTabs [data-baseweb="tab-list"] button {
@@ -87,283 +111,194 @@ def inject_custom_css():
     }
 
     .stTabs [data-baseweb="tab"] {
-        border-radius: 8px;
-        color: #444 !important;
+        border-radius: 10px;
+        color: #7a9cc4 !important;
         font-weight: 500;
         padding: 10px 24px;
         width: 100%;
         justify-content: center;
+        transition: all 0.3s ease;
     }
 
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #1976d2, #0288d1) !important;
-        color: white !important;
+        background: linear-gradient(135deg, #1565c0, #0d47a1) !important;
+        color: #e0f0ff !important;
+        box-shadow: 0 2px 12px rgba(21,101,192,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
     }
 
     .stButton > button {
-        border-radius: 10px;
+        border-radius: 12px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
         border: none;
+        letter-spacing: 0.02em;
     }
 
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #1976d2 0%, #0288d1 50%, #0097a7 100%) !important;
-        background-size: 200% 200%;
-        animation: gradientShift 8s ease infinite;
-        color: white !important;
-        box-shadow: 0 4px 15px rgba(25, 118, 210, 0.3);
+        background: linear-gradient(135deg, #1565c0 0%, #0d47a1 40%, #0277bd 100%) !important;
+        color: #e0f0ff !important;
+        box-shadow: 0 4px 20px rgba(21,101,192,0.5), 0 0 40px rgba(79,195,247,0.1);
+        border: 1px solid rgba(79,195,247,0.2) !important;
     }
 
     .stButton > button[kind="primary"]:hover {
-        box-shadow: 0 6px 25px rgba(25, 118, 210, 0.5);
-        transform: translateY(-1px);
+        box-shadow: 0 6px 30px rgba(21,101,192,0.6), 0 0 60px rgba(79,195,247,0.2);
+        transform: translateY(-2px);
     }
 
     .stButton > button:not([kind="primary"]) {
-        background: rgba(0,0,0,0.04) !important;
-        color: #333 !important;
-        border: 1px solid rgba(0,0,0,0.12) !important;
+        background: rgba(15,30,65,0.6) !important;
+        color: #b0cce8 !important;
+        border: 1px solid rgba(79,195,247,0.15) !important;
+        backdrop-filter: blur(10px);
     }
 
     .stButton > button:not([kind="primary"]):hover {
-        background: rgba(0,0,0,0.08) !important;
+        background: rgba(20,45,85,0.7) !important;
+        border-color: rgba(79,195,247,0.35) !important;
+        box-shadow: 0 0 15px rgba(79,195,247,0.15);
     }
 
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea {
-        background: #fff !important;
-        border: 1px solid rgba(0,0,0,0.15) !important;
-        border-radius: 10px !important;
-        color: #000 !important;
+        background: rgba(10,25,55,0.7) !important;
+        border: 1px solid rgba(79,195,247,0.15) !important;
+        border-radius: 12px !important;
+        color: #e0eafc !important;
+        backdrop-filter: blur(10px);
+    }
+
+    .stTextInput > div > div > input::placeholder,
+    .stTextArea > div > div > textarea::placeholder {
+        color: #5a7a9e !important;
     }
 
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
-        border-color: #1976d2 !important;
-        box-shadow: 0 0 8px rgba(25, 118, 210, 0.2) !important;
+        border-color: var(--neon-blue) !important;
+        box-shadow: 0 0 15px rgba(79,195,247,0.25), 0 0 30px rgba(79,195,247,0.1) !important;
     }
 
     .stSelectbox > div > div {
-        background: #fff !important;
-        border: 1px solid rgba(0,0,0,0.15) !important;
-        border-radius: 10px !important;
-        color: #000 !important;
+        background: rgba(10,25,55,0.7) !important;
+        border: 1px solid rgba(79,195,247,0.15) !important;
+        border-radius: 12px !important;
+        color: #e0eafc !important;
+        backdrop-filter: blur(10px);
+    }
+
+    .stTextInput label, .stTextArea label, .stSelectbox label,
+    .stFileUploader label, .stRadio label, .stCheckbox label {
+        color: #8ba4c4 !important;
     }
 
     [data-testid="stMetric"] {
-        background: linear-gradient(135deg, rgba(25,118,210,0.08), rgba(2,136,209,0.08));
-        border: 1px solid rgba(25,118,210,0.15);
-        border-radius: 12px;
-        padding: 16px;
+        background: linear-gradient(135deg, rgba(15,35,70,0.7), rgba(10,25,55,0.7));
+        border: 1px solid rgba(79,195,247,0.15);
+        border-radius: 16px;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
 
     [data-testid="stMetric"] label {
-        color: #555 !important;
+        color: #7a9cc4 !important;
+        text-transform: uppercase;
+        font-size: 0.75rem !important;
+        letter-spacing: 0.08em;
     }
 
     [data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #1565c0 !important;
+        color: var(--neon-blue) !important;
         font-weight: 700 !important;
+        text-shadow: 0 0 20px rgba(79,195,247,0.3);
     }
 
     [data-testid="stExpander"] {
-        background: rgba(0,0,0,0.02);
-        border: 1px solid rgba(0,0,0,0.08);
-        border-radius: 12px;
+        background: rgba(10,25,55,0.5);
+        border: 1px solid rgba(79,195,247,0.1);
+        border-radius: 14px;
+        backdrop-filter: blur(10px);
     }
 
     [data-testid="stChatMessage"] {
-        background: rgba(0,0,0,0.02) !important;
-        border: 1px solid rgba(0,0,0,0.06) !important;
-        border-radius: 12px !important;
-        padding: 16px !important;
-        margin-bottom: 12px !important;
+        background: rgba(10,25,55,0.4) !important;
+        border: 1px solid rgba(79,195,247,0.08) !important;
+        border-radius: 14px !important;
+        padding: 18px !important;
+        margin-bottom: 14px !important;
+        backdrop-filter: blur(5px);
     }
 
     .stMarkdown p, .stMarkdown li {
-        color: #1a1a2e;
+        color: #b0c8e8;
     }
 
     .stAlert > div {
-        border-radius: 10px !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(10px);
     }
 
     [data-testid="stFileUploader"] {
-        background: rgba(25,118,210,0.03);
-        border: 1px dashed rgba(25,118,210,0.3);
-        border-radius: 12px;
-        padding: 8px;
+        background: rgba(10,25,55,0.4);
+        border: 1px dashed rgba(79,195,247,0.3);
+        border-radius: 14px;
+        padding: 10px;
     }
 
     .hero-card {
-        background: linear-gradient(135deg, rgba(25,118,210,0.06), rgba(2,136,209,0.06));
-        border: 1px solid rgba(25,118,210,0.12);
-        border-radius: 16px;
-        padding: 32px;
-        margin: 16px 0;
+        background: linear-gradient(135deg, rgba(15,35,70,0.5), rgba(10,25,55,0.5));
+        border: 1px solid rgba(79,195,247,0.15);
+        border-radius: 20px;
+        padding: 36px;
+        margin: 20px 0;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
 
     .stat-pill {
         display: inline-block;
-        background: linear-gradient(135deg, #1976d2, #0288d1);
-        color: white;
+        background: linear-gradient(135deg, #1565c0, #0d47a1);
+        color: #e0f0ff;
         padding: 4px 14px;
         border-radius: 20px;
         font-weight: 600;
         font-size: 0.9rem;
         margin: 2px 4px;
+        box-shadow: 0 2px 8px rgba(21,101,192,0.3);
     }
 
     hr {
-        border-color: rgba(0,0,0,0.08) !important;
+        border-color: rgba(79,195,247,0.08) !important;
     }
 
     .stDivider {
-        border-color: rgba(0,0,0,0.08) !important;
+        border-color: rgba(79,195,247,0.08) !important;
     }
 
     [data-testid="stSidebar"] .stDivider hr,
     [data-testid="stSidebar"] hr {
-        border-color: rgba(0,0,0,0.1) !important;
+        border-color: rgba(79,195,247,0.12) !important;
     }
 
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --text-primary: #d0e4f7;
-            --text-secondary: #8bb8d9;
-            --text-accent: #4fc3f7;
-            --text-loading: #b0d4f1;
-            --text-body: #b8d4ea;
-            --text-hero-title: #e0e0e0;
-            --text-hero-body: #c3cfe2;
-            --text-mic-idle: #b0d4f1;
-        }
+    [data-testid="stDataFrame"] {
+        border-radius: 14px;
+        overflow: hidden;
+    }
 
-        .stApp {
-            background: linear-gradient(135deg, #0a1628, #0d2137, #0f2b4a, #0a1f3d, #081a30);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-        }
-
-        [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #0b1a2e, #0f2540, #112d4e, #0d2137);
-            background-size: 200% 200%;
-            border-right: 1px solid rgba(100,180,255,0.1);
-        }
-
-        [data-testid="stSidebar"] * {
-            color: #d0e4f7 !important;
-        }
-
-        h1 {
-            background: linear-gradient(90deg, #4fc3f7, #29b6f6, #81d4fa, #03a9f4, #4dd0e1, #4fc3f7);
-            background-size: 300% 100%;
-            animation: gradientShift 6s ease infinite;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent !important;
-        }
-
-        h1 span {
-            -webkit-text-fill-color: initial !important;
-        }
-
-        h2, h3 {
-            color: #b0d4f1 !important;
-        }
-
-        .stTabs [data-baseweb="tab-list"] {
-            background: rgba(100,180,255,0.06);
-        }
-
-        .stTabs [data-baseweb="tab"] {
-            color: #8bb8d9 !important;
-        }
-
-        .stButton > button[kind="primary"] {
-            box-shadow: 0 4px 15px rgba(25, 118, 210, 0.4);
-        }
-
-        .stButton > button:not([kind="primary"]) {
-            background: rgba(100,180,255,0.08) !important;
-            color: #b0d4f1 !important;
-            border: 1px solid rgba(100,180,255,0.2) !important;
-        }
-
-        .stButton > button:not([kind="primary"]):hover {
-            background: rgba(100,180,255,0.15) !important;
-        }
-
-        .stTextInput > div > div > input,
-        .stTextArea > div > div > textarea {
-            background: rgba(100,180,255,0.06) !important;
-            border: 1px solid rgba(100,180,255,0.15) !important;
-            color: #d0e4f7 !important;
-        }
-
-        .stTextInput > div > div > input:focus,
-        .stTextArea > div > div > textarea:focus {
-            border-color: #29b6f6 !important;
-            box-shadow: 0 0 10px rgba(41, 182, 246, 0.3) !important;
-        }
-
-        .stSelectbox > div > div {
-            background: rgba(100,180,255,0.06) !important;
-            border: 1px solid rgba(100,180,255,0.15) !important;
-            color: #d0e4f7 !important;
-        }
-
-        [data-testid="stMetric"] {
-            background: linear-gradient(135deg, rgba(25,118,210,0.12), rgba(2,136,209,0.12));
-            border: 1px solid rgba(41,182,246,0.25);
-        }
-
-        [data-testid="stMetric"] label {
-            color: #8bb8d9 !important;
-        }
-
-        [data-testid="stMetric"] [data-testid="stMetricValue"] {
-            color: #4fc3f7 !important;
-        }
-
-        [data-testid="stExpander"] {
-            background: rgba(100,180,255,0.04);
-            border: 1px solid rgba(100,180,255,0.1);
-        }
-
-        [data-testid="stChatMessage"] {
-            background: rgba(100,180,255,0.04) !important;
-            border: 1px solid rgba(100,180,255,0.08) !important;
-        }
-
-        .stMarkdown p, .stMarkdown li {
-            color: #b8d4ea;
-        }
-
-        [data-testid="stFileUploader"] {
-            background: rgba(100,180,255,0.04);
-            border: 1px dashed rgba(41,182,246,0.4);
-        }
-
-        .hero-card {
-            background: linear-gradient(135deg, rgba(25,118,210,0.1), rgba(2,136,209,0.1));
-            border: 1px solid rgba(41,182,246,0.2);
-        }
-
-        hr {
-            border-color: rgba(100,180,255,0.1) !important;
-        }
-
-        .stDivider {
-            border-color: rgba(100,180,255,0.1) !important;
-        }
-
-        [data-testid="stSidebar"] .stDivider hr,
-        [data-testid="stSidebar"] hr {
-            border-color: rgba(100,180,255,0.15) !important;
-        }
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: rgba(10,20,40,0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(79,195,247,0.2);
+        border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(79,195,247,0.4);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -878,7 +813,7 @@ def render_response_input():
                             textEl.style.fontWeight = '700';
                         } else {
                             textEl.textContent = 'Start recording your answer';
-                            textEl.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mic-idle').trim() || '#1976d2';
+                            textEl.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mic-idle').trim() || '#5ec4f7';
                             textEl.style.fontWeight = '600';
                         }
                     } catch(e) {}
@@ -892,7 +827,7 @@ def render_response_input():
         audio_bytes = audio_recorder(
             text="Start recording your answer",
             recording_color="#e74c3c",
-            neutral_color="#1976d2",
+            neutral_color="#4fc3f7",
             icon_size="2x",
             pause_threshold=30.0,
             key=recorder_key
