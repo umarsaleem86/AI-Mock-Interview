@@ -714,7 +714,7 @@ def render_response_input():
     """, unsafe_allow_html=True)
 
     answer_key = f"answer_{st.session_state.current_question_index}_{len(st.session_state.answers)}"
-    recorder_key = f"audio_{st.session_state.current_question_index}_{len(st.session_state.answers)}_{st.session_state.recorder_version}"
+    recorder_key = f"audio_recorder_{st.session_state.recorder_version}"
 
     col_voice, col_text = st.columns([3, 2])
 
