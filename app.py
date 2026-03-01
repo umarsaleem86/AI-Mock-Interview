@@ -29,33 +29,36 @@ def inject_custom_css():
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
     :root {
-        --text-primary: #1a2332;
-        --text-secondary: #5a6d84;
-        --text-accent: #1565c0;
-        --text-loading: #1976d2;
-        --text-body: #3a4a5c;
-        --text-hero-title: #1a2332;
-        --text-hero-body: #5a6d84;
-        --text-mic-idle: #1976d2;
+        --text-primary: #2d2b3d;
+        --text-secondary: #6b6b8d;
+        --text-accent: #3b5fc0;
+        --text-loading: #4a6fd0;
+        --text-body: #4a4868;
+        --text-hero-title: #2d2b3d;
+        --text-hero-body: #6b6b8d;
+        --text-mic-idle: #4a6fd0;
     }
 
     .stApp {
-        background: linear-gradient(150deg, #f4f7fc 0%, #eaf0f9 40%, #f0f4fb 100%);
+        background: linear-gradient(145deg, #eef1fa 0%, #e8ecf8 25%, #eae4f4 50%, #e8ecf8 75%, #eef1fa 100%);
     }
 
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #ffffff 0%, #f5f8fd 40%, #eef3fa 100%);
-        border-right: 1px solid rgba(21,101,192,0.1);
-        box-shadow: 2px 0 15px rgba(0,0,0,0.04);
+        background: linear-gradient(180deg, #f0eef8 0%, #ebe8f5 30%, #e6e3f2 60%, #eae8f4 100%);
+        border-right: 1px solid rgba(120,100,200,0.1);
+        box-shadow: 2px 0 20px rgba(100,80,180,0.05);
     }
 
     [data-testid="stSidebar"] * {
-        color: #2c3e50 !important;
+        color: #2d2b3d !important;
     }
 
     h1 {
-        color: #1565c0 !important;
-        -webkit-text-fill-color: #1565c0 !important;
+        background: linear-gradient(135deg, #3b5fc0, #5b4fc8, #4a6fd0);
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         font-weight: 700 !important;
         font-size: 2.5rem !important;
     }
@@ -65,15 +68,15 @@ def inject_custom_css():
     }
 
     h2, h3 {
-        color: #1a2332 !important;
+        color: #2d2b3d !important;
     }
 
     .stTabs [data-baseweb="tab-list"] {
         gap: 4px;
-        background: #eef3fa;
+        background: rgba(120,100,200,0.06);
         border-radius: 14px;
         padding: 4px;
-        border: 1px solid rgba(21,101,192,0.08);
+        border: 1px solid rgba(120,100,200,0.1);
     }
 
     .stTabs [data-baseweb="tab-list"] button {
@@ -82,7 +85,7 @@ def inject_custom_css():
 
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px;
-        color: #5a6d84 !important;
+        color: #6b6b8d !important;
         font-weight: 500;
         padding: 10px 24px;
         width: 100%;
@@ -91,9 +94,9 @@ def inject_custom_css():
     }
 
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #1976d2, #1565c0) !important;
+        background: linear-gradient(135deg, #3b5fc0, #5b4fc8) !important;
         color: #ffffff !important;
-        box-shadow: 0 2px 10px rgba(25,118,210,0.3);
+        box-shadow: 0 3px 12px rgba(59,95,192,0.35);
     }
 
     .stButton > button {
@@ -105,96 +108,99 @@ def inject_custom_css():
     }
 
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%) !important;
+        background: linear-gradient(135deg, #3b5fc0 0%, #4a6fd0 50%, #5b7fdf 100%) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 15px rgba(25,118,210,0.3);
+        box-shadow: 0 4px 18px rgba(59,95,192,0.35);
     }
 
     .stButton > button[kind="primary"]:hover {
-        box-shadow: 0 6px 25px rgba(25,118,210,0.4);
+        box-shadow: 0 6px 28px rgba(59,95,192,0.45);
         transform: translateY(-2px);
     }
 
     .stButton > button:not([kind="primary"]) {
-        background: #ffffff !important;
-        color: #3a4a5c !important;
-        border: 1px solid #d0daea !important;
+        background: rgba(255,255,255,0.8) !important;
+        color: #4a4868 !important;
+        border: 1px solid rgba(120,100,200,0.18) !important;
     }
 
     .stButton > button:not([kind="primary"]):hover {
-        background: #f0f4fb !important;
-        border-color: #b0c4de !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        background: rgba(255,255,255,1) !important;
+        border-color: rgba(120,100,200,0.3) !important;
+        box-shadow: 0 2px 10px rgba(100,80,180,0.08);
     }
 
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea {
-        background: #ffffff !important;
-        border: 1px solid #d0daea !important;
+        background: rgba(255,255,255,0.85) !important;
+        border: 1px solid rgba(120,100,200,0.15) !important;
         border-radius: 12px !important;
-        color: #1a2332 !important;
+        color: #2d2b3d !important;
     }
 
     .stTextInput > div > div > input::placeholder,
     .stTextArea > div > div > textarea::placeholder {
-        color: #9aacbe !important;
+        color: #9a98b2 !important;
     }
 
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
-        border-color: #1976d2 !important;
-        box-shadow: 0 0 0 3px rgba(25,118,210,0.12) !important;
+        border-color: #5b4fc8 !important;
+        box-shadow: 0 0 0 3px rgba(91,79,200,0.1) !important;
     }
 
     .stSelectbox > div > div {
-        background: #ffffff !important;
-        border: 1px solid #d0daea !important;
+        background: rgba(255,255,255,0.85) !important;
+        border: 1px solid rgba(120,100,200,0.15) !important;
         border-radius: 12px !important;
-        color: #1a2332 !important;
+        color: #2d2b3d !important;
     }
 
     .stTextInput label, .stTextArea label, .stSelectbox label,
     .stFileUploader label, .stRadio label, .stCheckbox label {
-        color: #5a6d84 !important;
+        color: #5a5878 !important;
     }
 
     [data-testid="stMetric"] {
-        background: #ffffff;
-        border: 1px solid #e0e8f0;
+        background: rgba(255,255,255,0.75);
+        border: 1px solid rgba(120,100,200,0.1);
         border-radius: 16px;
         padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        box-shadow: 0 2px 12px rgba(100,80,180,0.06);
+        backdrop-filter: blur(10px);
     }
 
     [data-testid="stMetric"] label {
-        color: #7a8da0 !important;
+        color: #7a789a !important;
         text-transform: uppercase;
         font-size: 0.75rem !important;
         letter-spacing: 0.08em;
     }
 
     [data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #1565c0 !important;
+        color: #3b5fc0 !important;
         font-weight: 700 !important;
     }
 
     [data-testid="stExpander"] {
-        background: #ffffff;
-        border: 1px solid #e0e8f0;
+        background: rgba(255,255,255,0.7);
+        border: 1px solid rgba(120,100,200,0.08);
         border-radius: 14px;
+        backdrop-filter: blur(10px);
     }
 
     [data-testid="stChatMessage"] {
-        background: #ffffff !important;
-        border: 1px solid #e8eef5 !important;
+        background: rgba(255,255,255,0.75) !important;
+        border: 1px solid rgba(120,100,200,0.08) !important;
         border-radius: 14px !important;
         padding: 18px !important;
         margin-bottom: 14px !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.03) !important;
+        box-shadow: 0 2px 8px rgba(100,80,180,0.04) !important;
+        backdrop-filter: blur(10px) !important;
     }
 
     .stMarkdown p, .stMarkdown li {
-        color: #3a4a5c;
+        color: #4a4868;
     }
 
     .stAlert > div {
@@ -202,24 +208,25 @@ def inject_custom_css():
     }
 
     [data-testid="stFileUploader"] {
-        background: #ffffff;
-        border: 1px dashed #b0c4de;
+        background: rgba(255,255,255,0.7);
+        border: 1px dashed rgba(120,100,200,0.25);
         border-radius: 14px;
         padding: 10px;
     }
 
     .hero-card {
-        background: #ffffff;
-        border: 1px solid #e0e8f0;
+        background: rgba(255,255,255,0.7);
+        border: 1px solid rgba(120,100,200,0.1);
         border-radius: 20px;
         padding: 36px;
         margin: 20px 0;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        box-shadow: 0 4px 20px rgba(100,80,180,0.06);
+        backdrop-filter: blur(10px);
     }
 
     .stat-pill {
         display: inline-block;
-        background: linear-gradient(135deg, #1976d2, #1565c0);
+        background: linear-gradient(135deg, #3b5fc0, #5b4fc8);
         color: #ffffff;
         padding: 4px 14px;
         border-radius: 20px;
@@ -228,17 +235,25 @@ def inject_custom_css():
         margin: 2px 4px;
     }
 
+    .response-header {
+        background: linear-gradient(135deg, rgba(59,95,192,0.08), rgba(91,79,200,0.08));
+        border: 1px solid rgba(120,100,200,0.12);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin: 16px 0 12px 0;
+    }
+
     hr {
-        border-color: #e0e8f0 !important;
+        border-color: rgba(120,100,200,0.08) !important;
     }
 
     .stDivider {
-        border-color: #e0e8f0 !important;
+        border-color: rgba(120,100,200,0.08) !important;
     }
 
     [data-testid="stSidebar"] .stDivider hr,
     [data-testid="stSidebar"] hr {
-        border-color: #d8e2ee !important;
+        border-color: rgba(120,100,200,0.12) !important;
     }
 
     [data-testid="stDataFrame"] {
@@ -603,8 +618,8 @@ def render_chat():
                         if st.button("🔊 Listen to Question", key=f"listen_{question_idx}"):
                             st.markdown("""
                             <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; margin-top: 4px;
-                                background: rgba(25,118,210,0.06); border-radius: 8px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: #1976d2;
+                                background: rgba(59,95,192,0.06); border-radius: 8px;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: #4a6fd0;
                                     animation: pulse 1s ease-in-out infinite alternate;"></div>
                                 <span style="color: var(--text-loading); font-size: 0.9rem;">Generating audio...</span>
                             </div>
@@ -623,8 +638,8 @@ def render_chat():
         st.session_state.auto_speak_question = ''
         st.markdown("""
         <div style="display: flex; align-items: center; gap: 8px; padding: 10px 14px;
-            background: rgba(25,118,210,0.1); border-radius: 8px; margin: 8px 0;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: #1976d2;
+            background: rgba(59,95,192,0.06); border-radius: 8px; margin: 8px 0;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #4a6fd0;
                 animation: pulse 1s ease-in-out infinite alternate;"></div>
             <span style="color: var(--text-loading); font-size: 0.9rem;">Generating question audio...</span>
         </div>
@@ -668,9 +683,9 @@ def render_response_input():
         st.markdown("---")
         st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; padding: 20px; 
-            background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15)); 
-            border: 1px solid rgba(41,182,246,0.3); border-radius: 12px; margin: 16px 0;">
-            <div style="width: 12px; height: 12px; border-radius: 50%; background: #1976d2; 
+            background: linear-gradient(135deg, rgba(59,95,192,0.08), rgba(91,79,200,0.08)); 
+            border: 1px solid rgba(120,100,200,0.15); border-radius: 12px; margin: 16px 0;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background: #4a6fd0; 
                 animation: blink 1s ease-in-out infinite alternate;"></div>
             <span style="color: var(--text-loading); font-size: 1.1rem; font-weight: 500;">
                 Processing your response... Please wait
@@ -690,7 +705,13 @@ def render_response_input():
 
     st.markdown("---")
 
-    st.markdown(f"### ✍️ Your Response — Question {st.session_state.current_question_index} of {TOTAL_QUESTIONS}")
+    st.markdown(f"""
+    <div class="response-header">
+        <span style="font-size: 1.3rem; font-weight: 600; color: var(--text-primary);">
+            ✍️ Your Response — Question {st.session_state.current_question_index} of {TOTAL_QUESTIONS}
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
 
     answer_key = f"answer_{st.session_state.current_question_index}_{len(st.session_state.answers)}"
     recorder_key = f"audio_{st.session_state.current_question_index}_{len(st.session_state.answers)}_{st.session_state.recorder_version}"
@@ -712,9 +733,9 @@ def render_response_input():
                 st.session_state.processing = True
                 st.markdown("""
                 <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; margin-top: 8px;
-                    background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15));
-                    border: 1px solid rgba(41,182,246,0.3); border-radius: 10px;">
-                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #1976d2;
+                    background: linear-gradient(135deg, rgba(59,95,192,0.08), rgba(91,79,200,0.08));
+                    border: 1px solid rgba(120,100,200,0.15); border-radius: 10px;">
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #4a6fd0;
                         animation: pulse 1s ease-in-out infinite alternate;"></div>
                     <span style="color: var(--text-loading); font-weight: 500;">Evaluating your response...</span>
                 </div>
@@ -759,7 +780,7 @@ def render_response_input():
                             textEl.style.fontWeight = '700';
                         } else {
                             textEl.textContent = 'Start recording your answer';
-                            textEl.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mic-idle').trim() || '#1976d2';
+                            textEl.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mic-idle').trim() || '#4a6fd0';
                             textEl.style.fontWeight = '600';
                         }
                     } catch(e) {}
@@ -773,7 +794,7 @@ def render_response_input():
         audio_bytes = audio_recorder(
             text="Start recording your answer",
             recording_color="#e74c3c",
-            neutral_color="#1976d2",
+            neutral_color="#4a6fd0",
             icon_size="2x",
             pause_threshold=30.0,
             key=recorder_key
@@ -803,9 +824,9 @@ def render_response_input():
                     st.session_state.processing = True
                     st.markdown("""
                     <div style="display: flex; align-items: center; gap: 12px; padding: 16px; 
-                        background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15)); 
-                        border: 1px solid rgba(41,182,246,0.3); border-radius: 12px; margin: 8px 0;">
-                        <div style="width: 10px; height: 10px; border-radius: 50%; background: #1976d2; 
+                        background: linear-gradient(135deg, rgba(59,95,192,0.08), rgba(91,79,200,0.08)); 
+                        border: 1px solid rgba(120,100,200,0.15); border-radius: 12px; margin: 8px 0;">
+                        <div style="width: 10px; height: 10px; border-radius: 50%; background: #4a6fd0; 
                             animation: pulse 1s ease-in-out infinite alternate;"></div>
                         <span style="color: var(--text-loading); font-weight: 500;">
                             Transcribing and evaluating your response...
@@ -854,8 +875,8 @@ def render_final_report():
         avg_score = sum(st.session_state.scores) / len(st.session_state.scores)
 
         st.markdown("""
-        <div style="background: linear-gradient(135deg, rgba(25,118,210,0.12), rgba(2,136,209,0.12)); 
-            border: 1px solid rgba(41,182,246,0.3); border-radius: 16px; padding: 24px; margin-bottom: 20px;">
+        <div style="background: linear-gradient(135deg, rgba(59,95,192,0.06), rgba(91,79,200,0.06)); 
+            border: 1px solid rgba(120,100,200,0.12); border-radius: 16px; padding: 24px; margin-bottom: 20px;">
             <h2 style="color: var(--text-hero-title); margin: 0 0 8px 0;">📋 Your Interview Performance Report</h2>
             <p style="color: var(--text-secondary); margin: 0;">Personalized analysis based on your interview</p>
         </div>
@@ -879,9 +900,9 @@ def render_final_report():
     if st.button("📊 Generate Performance Report", type="primary", use_container_width=True):
         st.markdown("""
         <div style="display: flex; align-items: center; gap: 10px; padding: 14px 18px; margin-top: 8px;
-            background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15));
-            border: 1px solid rgba(41,182,246,0.3); border-radius: 10px;">
-            <div style="width: 10px; height: 10px; border-radius: 50%; background: #1976d2;
+            background: linear-gradient(135deg, rgba(59,95,192,0.08), rgba(91,79,200,0.08));
+            border: 1px solid rgba(120,100,200,0.15); border-radius: 10px;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #4a6fd0;
                 animation: pulse 1s ease-in-out infinite alternate;"></div>
             <span style="color: var(--text-loading); font-weight: 500;">Analyzing your interview performance...</span>
         </div>
