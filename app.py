@@ -29,63 +29,33 @@ def inject_custom_css():
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
     :root {
-        --text-primary: #e0eafc;
-        --text-secondary: #8ba4c4;
-        --text-accent: #4fc3f7;
-        --text-loading: #5ec4f7;
-        --text-body: #b0c8e8;
-        --text-hero-title: #f0f4ff;
-        --text-hero-body: #a0b8d8;
-        --text-mic-idle: #5ec4f7;
-        --bg-card: rgba(15,30,60,0.6);
-        --border-glow: rgba(79,195,247,0.2);
-        --neon-blue: #4fc3f7;
-        --neon-purple: #7c4dff;
-        --deep-bg: #060d1f;
-        --sidebar-bg: #0a1428;
-    }
-
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        25% { background-position: 50% 100%; }
-        50% { background-position: 100% 50%; }
-        75% { background-position: 50% 0%; }
-        100% { background-position: 0% 50%; }
-    }
-
-    @keyframes neonPulse {
-        0% { box-shadow: 0 0 5px rgba(79,195,247,0.3), 0 0 15px rgba(79,195,247,0.1); }
-        50% { box-shadow: 0 0 10px rgba(79,195,247,0.5), 0 0 30px rgba(79,195,247,0.2); }
-        100% { box-shadow: 0 0 5px rgba(79,195,247,0.3), 0 0 15px rgba(79,195,247,0.1); }
-    }
-
-    @keyframes titleGlow {
-        0% { text-shadow: 0 0 10px rgba(79,195,247,0.3); background-position: 0% 50%; }
-        50% { text-shadow: 0 0 20px rgba(79,195,247,0.5); background-position: 100% 50%; }
-        100% { text-shadow: 0 0 10px rgba(79,195,247,0.3); background-position: 0% 50%; }
+        --text-primary: #1a2332;
+        --text-secondary: #5a6d84;
+        --text-accent: #1565c0;
+        --text-loading: #1976d2;
+        --text-body: #3a4a5c;
+        --text-hero-title: #1a2332;
+        --text-hero-body: #5a6d84;
+        --text-mic-idle: #1976d2;
     }
 
     .stApp {
-        background: radial-gradient(ellipse at 20% 50%, #0d1b3e 0%, #060d1f 50%, #030810 100%);
+        background: linear-gradient(150deg, #f4f7fc 0%, #eaf0f9 40%, #f0f4fb 100%);
     }
 
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0c1a32 0%, #091428 40%, #0b1830 100%);
-        border-right: 1px solid rgba(79,195,247,0.12);
-        box-shadow: 2px 0 20px rgba(0,0,0,0.5);
+        background: linear-gradient(180deg, #ffffff 0%, #f5f8fd 40%, #eef3fa 100%);
+        border-right: 1px solid rgba(21,101,192,0.1);
+        box-shadow: 2px 0 15px rgba(0,0,0,0.04);
     }
 
     [data-testid="stSidebar"] * {
-        color: #c8ddf5 !important;
+        color: #2c3e50 !important;
     }
 
     h1 {
-        background: linear-gradient(135deg, #4fc3f7, #29b6f6, #81d4fa, #b3e5fc, #4fc3f7);
-        background-size: 300% 100%;
-        animation: titleGlow 4s ease infinite;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #1565c0 !important;
+        -webkit-text-fill-color: #1565c0 !important;
         font-weight: 700 !important;
         font-size: 2.5rem !important;
     }
@@ -95,15 +65,15 @@ def inject_custom_css():
     }
 
     h2, h3 {
-        color: #c8ddf5 !important;
+        color: #1a2332 !important;
     }
 
     .stTabs [data-baseweb="tab-list"] {
         gap: 4px;
-        background: rgba(10,25,55,0.7);
+        background: #eef3fa;
         border-radius: 14px;
         padding: 4px;
-        border: 1px solid rgba(79,195,247,0.12);
+        border: 1px solid rgba(21,101,192,0.08);
     }
 
     .stTabs [data-baseweb="tab-list"] button {
@@ -112,7 +82,7 @@ def inject_custom_css():
 
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px;
-        color: #7a9cc4 !important;
+        color: #5a6d84 !important;
         font-weight: 500;
         padding: 10px 24px;
         width: 100%;
@@ -121,9 +91,9 @@ def inject_custom_css():
     }
 
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #1565c0, #0d47a1) !important;
-        color: #e0f0ff !important;
-        box-shadow: 0 2px 12px rgba(21,101,192,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        background: linear-gradient(135deg, #1976d2, #1565c0) !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 10px rgba(25,118,210,0.3);
     }
 
     .stButton > button {
@@ -135,170 +105,145 @@ def inject_custom_css():
     }
 
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #1565c0 0%, #0d47a1 40%, #0277bd 100%) !important;
-        color: #e0f0ff !important;
-        box-shadow: 0 4px 20px rgba(21,101,192,0.5), 0 0 40px rgba(79,195,247,0.1);
-        border: 1px solid rgba(79,195,247,0.2) !important;
+        background: linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 15px rgba(25,118,210,0.3);
     }
 
     .stButton > button[kind="primary"]:hover {
-        box-shadow: 0 6px 30px rgba(21,101,192,0.6), 0 0 60px rgba(79,195,247,0.2);
+        box-shadow: 0 6px 25px rgba(25,118,210,0.4);
         transform: translateY(-2px);
     }
 
     .stButton > button:not([kind="primary"]) {
-        background: rgba(15,30,65,0.6) !important;
-        color: #b0cce8 !important;
-        border: 1px solid rgba(79,195,247,0.15) !important;
-        backdrop-filter: blur(10px);
+        background: #ffffff !important;
+        color: #3a4a5c !important;
+        border: 1px solid #d0daea !important;
     }
 
     .stButton > button:not([kind="primary"]):hover {
-        background: rgba(20,45,85,0.7) !important;
-        border-color: rgba(79,195,247,0.35) !important;
-        box-shadow: 0 0 15px rgba(79,195,247,0.15);
+        background: #f0f4fb !important;
+        border-color: #b0c4de !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
 
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea {
-        background: rgba(10,25,55,0.7) !important;
-        border: 1px solid rgba(79,195,247,0.15) !important;
+        background: #ffffff !important;
+        border: 1px solid #d0daea !important;
         border-radius: 12px !important;
-        color: #e0eafc !important;
-        backdrop-filter: blur(10px);
+        color: #1a2332 !important;
     }
 
     .stTextInput > div > div > input::placeholder,
     .stTextArea > div > div > textarea::placeholder {
-        color: #5a7a9e !important;
+        color: #9aacbe !important;
     }
 
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
-        border-color: var(--neon-blue) !important;
-        box-shadow: 0 0 15px rgba(79,195,247,0.25), 0 0 30px rgba(79,195,247,0.1) !important;
+        border-color: #1976d2 !important;
+        box-shadow: 0 0 0 3px rgba(25,118,210,0.12) !important;
     }
 
     .stSelectbox > div > div {
-        background: rgba(10,25,55,0.7) !important;
-        border: 1px solid rgba(79,195,247,0.15) !important;
+        background: #ffffff !important;
+        border: 1px solid #d0daea !important;
         border-radius: 12px !important;
-        color: #e0eafc !important;
-        backdrop-filter: blur(10px);
+        color: #1a2332 !important;
     }
 
     .stTextInput label, .stTextArea label, .stSelectbox label,
     .stFileUploader label, .stRadio label, .stCheckbox label {
-        color: #8ba4c4 !important;
+        color: #5a6d84 !important;
     }
 
     [data-testid="stMetric"] {
-        background: linear-gradient(135deg, rgba(15,35,70,0.7), rgba(10,25,55,0.7));
-        border: 1px solid rgba(79,195,247,0.15);
+        background: #ffffff;
+        border: 1px solid #e0e8f0;
         border-radius: 16px;
         padding: 20px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
     [data-testid="stMetric"] label {
-        color: #7a9cc4 !important;
+        color: #7a8da0 !important;
         text-transform: uppercase;
         font-size: 0.75rem !important;
         letter-spacing: 0.08em;
     }
 
     [data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: var(--neon-blue) !important;
+        color: #1565c0 !important;
         font-weight: 700 !important;
-        text-shadow: 0 0 20px rgba(79,195,247,0.3);
     }
 
     [data-testid="stExpander"] {
-        background: rgba(10,25,55,0.5);
-        border: 1px solid rgba(79,195,247,0.1);
+        background: #ffffff;
+        border: 1px solid #e0e8f0;
         border-radius: 14px;
-        backdrop-filter: blur(10px);
     }
 
     [data-testid="stChatMessage"] {
-        background: rgba(10,25,55,0.4) !important;
-        border: 1px solid rgba(79,195,247,0.08) !important;
+        background: #ffffff !important;
+        border: 1px solid #e8eef5 !important;
         border-radius: 14px !important;
         padding: 18px !important;
         margin-bottom: 14px !important;
-        backdrop-filter: blur(5px);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.03) !important;
     }
 
     .stMarkdown p, .stMarkdown li {
-        color: #b0c8e8;
+        color: #3a4a5c;
     }
 
     .stAlert > div {
         border-radius: 12px !important;
-        backdrop-filter: blur(10px);
     }
 
     [data-testid="stFileUploader"] {
-        background: rgba(10,25,55,0.4);
-        border: 1px dashed rgba(79,195,247,0.3);
+        background: #ffffff;
+        border: 1px dashed #b0c4de;
         border-radius: 14px;
         padding: 10px;
     }
 
     .hero-card {
-        background: linear-gradient(135deg, rgba(15,35,70,0.5), rgba(10,25,55,0.5));
-        border: 1px solid rgba(79,195,247,0.15);
+        background: #ffffff;
+        border: 1px solid #e0e8f0;
         border-radius: 20px;
         padding: 36px;
         margin: 20px 0;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
     }
 
     .stat-pill {
         display: inline-block;
-        background: linear-gradient(135deg, #1565c0, #0d47a1);
-        color: #e0f0ff;
+        background: linear-gradient(135deg, #1976d2, #1565c0);
+        color: #ffffff;
         padding: 4px 14px;
         border-radius: 20px;
         font-weight: 600;
         font-size: 0.9rem;
         margin: 2px 4px;
-        box-shadow: 0 2px 8px rgba(21,101,192,0.3);
     }
 
     hr {
-        border-color: rgba(79,195,247,0.08) !important;
+        border-color: #e0e8f0 !important;
     }
 
     .stDivider {
-        border-color: rgba(79,195,247,0.08) !important;
+        border-color: #e0e8f0 !important;
     }
 
     [data-testid="stSidebar"] .stDivider hr,
     [data-testid="stSidebar"] hr {
-        border-color: rgba(79,195,247,0.12) !important;
+        border-color: #d8e2ee !important;
     }
 
     [data-testid="stDataFrame"] {
         border-radius: 14px;
         overflow: hidden;
-    }
-
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-        background: rgba(10,20,40,0.5);
-    }
-    ::-webkit-scrollbar-thumb {
-        background: rgba(79,195,247,0.2);
-        border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-        background: rgba(79,195,247,0.4);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -657,8 +602,8 @@ def render_chat():
                         if st.button("🔊 Listen to Question", key=f"listen_{question_idx}"):
                             st.markdown("""
                             <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; margin-top: 4px;
-                                background: rgba(25,118,210,0.1); border-radius: 8px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: #29b6f6;
+                                background: rgba(25,118,210,0.06); border-radius: 8px;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: #1976d2;
                                     animation: pulse 1s ease-in-out infinite alternate;"></div>
                                 <span style="color: var(--text-loading); font-size: 0.9rem;">Generating audio...</span>
                             </div>
@@ -678,7 +623,7 @@ def render_chat():
         st.markdown("""
         <div style="display: flex; align-items: center; gap: 8px; padding: 10px 14px;
             background: rgba(25,118,210,0.1); border-radius: 8px; margin: 8px 0;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: #29b6f6;
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #1976d2;
                 animation: pulse 1s ease-in-out infinite alternate;"></div>
             <span style="color: var(--text-loading); font-size: 0.9rem;">Generating question audio...</span>
         </div>
@@ -724,7 +669,7 @@ def render_response_input():
         <div style="display: flex; align-items: center; gap: 12px; padding: 20px; 
             background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15)); 
             border: 1px solid rgba(41,182,246,0.3); border-radius: 12px; margin: 16px 0;">
-            <div style="width: 12px; height: 12px; border-radius: 50%; background: #29b6f6; 
+            <div style="width: 12px; height: 12px; border-radius: 50%; background: #1976d2; 
                 animation: blink 1s ease-in-out infinite alternate;"></div>
             <span style="color: var(--text-loading); font-size: 1.1rem; font-weight: 500;">
                 Processing your response... Please wait
@@ -768,7 +713,7 @@ def render_response_input():
                 <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; margin-top: 8px;
                     background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15));
                     border: 1px solid rgba(41,182,246,0.3); border-radius: 10px;">
-                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #29b6f6;
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #1976d2;
                         animation: pulse 1s ease-in-out infinite alternate;"></div>
                     <span style="color: var(--text-loading); font-weight: 500;">Evaluating your response...</span>
                 </div>
@@ -813,7 +758,7 @@ def render_response_input():
                             textEl.style.fontWeight = '700';
                         } else {
                             textEl.textContent = 'Start recording your answer';
-                            textEl.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mic-idle').trim() || '#5ec4f7';
+                            textEl.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mic-idle').trim() || '#1976d2';
                             textEl.style.fontWeight = '600';
                         }
                     } catch(e) {}
@@ -827,7 +772,7 @@ def render_response_input():
         audio_bytes = audio_recorder(
             text="Start recording your answer",
             recording_color="#e74c3c",
-            neutral_color="#4fc3f7",
+            neutral_color="#1976d2",
             icon_size="2x",
             pause_threshold=30.0,
             key=recorder_key
@@ -859,7 +804,7 @@ def render_response_input():
                     <div style="display: flex; align-items: center; gap: 12px; padding: 16px; 
                         background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15)); 
                         border: 1px solid rgba(41,182,246,0.3); border-radius: 12px; margin: 8px 0;">
-                        <div style="width: 10px; height: 10px; border-radius: 50%; background: #29b6f6; 
+                        <div style="width: 10px; height: 10px; border-radius: 50%; background: #1976d2; 
                             animation: pulse 1s ease-in-out infinite alternate;"></div>
                         <span style="color: var(--text-loading); font-weight: 500;">
                             Transcribing and evaluating your response...
@@ -935,7 +880,7 @@ def render_final_report():
         <div style="display: flex; align-items: center; gap: 10px; padding: 14px 18px; margin-top: 8px;
             background: linear-gradient(135deg, rgba(25,118,210,0.15), rgba(2,136,209,0.15));
             border: 1px solid rgba(41,182,246,0.3); border-radius: 10px;">
-            <div style="width: 10px; height: 10px; border-radius: 50%; background: #29b6f6;
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #1976d2;
                 animation: pulse 1s ease-in-out infinite alternate;"></div>
             <span style="color: var(--text-loading); font-weight: 500;">Analyzing your interview performance...</span>
         </div>
