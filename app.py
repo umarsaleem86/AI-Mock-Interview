@@ -730,6 +730,22 @@ def render_response_input():
             0% { background-position: 0% 50%; }
             100% { background-position: 200% 50%; }
         }
+        @keyframes micGlow {
+            0% { box-shadow: 0 0 8px rgba(255,82,82,0.4), 0 0 20px rgba(255,82,82,0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 16px rgba(255,82,82,0.7), 0 0 35px rgba(255,82,82,0.3); transform: scale(1.08); }
+            100% { box-shadow: 0 0 8px rgba(255,82,82,0.4), 0 0 20px rgba(255,82,82,0.2); transform: scale(1); }
+        }
+        @keyframes micColorCycle {
+            0% { fill: #ff5252; }
+            25% { fill: #ff8a80; }
+            50% { fill: #ffffff; }
+            75% { fill: #ff8a80; }
+            100% { fill: #ff5252; }
+        }
+        @keyframes waveBounce {
+            0%, 100% { transform: scaleY(0.3); }
+            50% { transform: scaleY(1); }
+        }
         .mic-banner {
             background: linear-gradient(135deg, #3b5fc0 0%, #4a8bd4 40%, #5ba3e0 70%, #4a8bd4 100%);
             border-radius: 14px;
@@ -740,6 +756,7 @@ def render_response_input():
             position: relative;
             overflow: hidden;
             min-height: 80px;
+            transition: background 0.5s ease;
         }
         .mic-banner::before {
             content: '';
@@ -756,24 +773,35 @@ def render_response_input():
             background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 100%);
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0; position: relative; z-index: 1;
+            transition: all 0.4s ease;
         }
-        .mic-icon-area svg { width: 28px; height: 28px; fill: white; }
+        .mic-icon-area.recording {
+            background: radial-gradient(circle, rgba(255,82,82,0.35) 0%, rgba(255,82,82,0.1) 100%);
+            animation: micGlow 1.5s ease-in-out infinite;
+        }
+        .mic-icon-area svg { width: 28px; height: 28px; fill: white; transition: fill 0.3s ease; }
+        .mic-icon-area.recording svg { animation: micColorCycle 2s ease-in-out infinite; }
         .mic-text { position: relative; z-index: 1; }
         .mic-status { color: #ffffff; font-weight: 700; font-size: 1.05rem; }
         .mic-hint { color: rgba(255,255,255,0.8); font-size: 0.9rem; font-weight: 400; }
         .wave-dots {
             position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-            display: flex; gap: 3px; z-index: 1;
+            display: flex; gap: 3px; z-index: 1; align-items: center;
         }
         .wave-dot {
             width: 3px; border-radius: 2px; background: rgba(255,255,255,0.4);
+            transition: background 0.3s ease;
+        }
+        .wave-dot.active {
+            background: rgba(255,180,180,0.8);
+            animation: waveBounce 0.6s ease-in-out infinite;
         }
         </style>
         """, unsafe_allow_html=True)
 
         st.markdown("""
         <div class="mic-banner" id="mic-banner">
-            <div class="mic-icon-area">
+            <div class="mic-icon-area" id="mic-icon-area">
                 <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
             </div>
             <div class="mic-text">
@@ -792,7 +820,7 @@ def render_response_input():
                     dot.className = 'wave-dot';
                     const h = 8 + Math.random() * 24;
                     dot.style.height = h + 'px';
-                    dot.style.animationDelay = (i * 0.05) + 's';
+                    dot.style.animationDelay = (i * 0.08) + 's';
                     container.appendChild(dot);
                 }
             }
@@ -813,19 +841,28 @@ def render_response_input():
                 const status = document.getElementById('mic-status-text');
                 const hint = document.getElementById('mic-hint-text');
                 const banner = document.getElementById('mic-banner');
-                if (!status || !hint || !banner) return;
+                const micIcon = document.getElementById('mic-icon-area');
+                const dots = document.querySelectorAll('.wave-dot');
+                if (!status || !hint || !banner || !micIcon) return;
                 if (isRecording) {
                     status.innerHTML = '<span style="color:#ffcdd2;">Recording...</span> Speak now';
                     hint.textContent = 'Click mic again to stop';
-                    banner.style.background = 'linear-gradient(135deg, #1a47a0 0%, #2d6bc4 40%, #3b82d4 70%, #2d6bc4 100%)';
+                    banner.style.background = 'linear-gradient(135deg, #1a3d8f 0%, #2558b0 30%, #3070c8 60%, #2558b0 100%)';
+                    micIcon.classList.add('recording');
+                    dots.forEach(d => {
+                        d.classList.add('active');
+                        d.style.height = (6 + Math.random() * 28) + 'px';
+                    });
                 } else {
                     status.innerHTML = '🎙️ Click mic below to start';
                     hint.textContent = 'Speak your answer clearly';
                     banner.style.background = 'linear-gradient(135deg, #3b5fc0 0%, #4a8bd4 40%, #5ba3e0 70%, #4a8bd4 100%)';
+                    micIcon.classList.remove('recording');
+                    dots.forEach(d => d.classList.remove('active'));
                 }
             }
             generateWaveDots();
-            setInterval(updateBanner, 400);
+            setInterval(updateBanner, 350);
         })();
         </script>
         """, unsafe_allow_html=True)
