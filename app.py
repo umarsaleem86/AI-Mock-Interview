@@ -841,17 +841,33 @@ def render_response_input():
         </div>
         <script>
         (function(){
-            var mc=document.getElementById('mc');
-            var c=document.getElementById('micCircle');
-            var r1=document.getElementById('r1');
-            var r2=document.getElementById('r2');
-            var r3=document.getElementById('r3');
-            var lb=document.getElementById('micLabel');
-            var sb=document.getElementById('micSub');
-            var rs=document.getElementById('recStatus');
-            if(!mc||!c) return;
-
-            function setRecording(isRec) {
+            function detect() {
+                var isRec = false;
+                try {
+                    var p = window.parent.document;
+                    var ifs = p.querySelectorAll('iframe');
+                    for (var i=0; i<ifs.length; i++) {
+                        try {
+                            var d = ifs[i].contentDocument || ifs[i].contentWindow.document;
+                            if (!d) continue;
+                            var svgs = d.querySelectorAll('svg');
+                            for (var j=0; j<svgs.length; j++) {
+                                var f = svgs[j].getAttribute('fill')||'';
+                                if (f.indexOf('#e74c3c')!==-1||f==='red'){isRec=true;break;}
+                            }
+                        } catch(e){}
+                        if(isRec) break;
+                    }
+                } catch(e){}
+                var mc=document.getElementById('mc');
+                var c=document.getElementById('micCircle');
+                var r1=document.getElementById('r1');
+                var r2=document.getElementById('r2');
+                var r3=document.getElementById('r3');
+                var lb=document.getElementById('micLabel');
+                var sb=document.getElementById('micSub');
+                var rs=document.getElementById('recStatus');
+                if(!mc||!c) return;
                 if(isRec){
                     mc.classList.add('recording');
                     c.classList.add('recording');
@@ -872,14 +888,7 @@ def render_response_input():
                     if(sb) sb.style.display='block';
                 }
             }
-
-            window.addEventListener('message', function(e) {
-                try {
-                    var d = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data;
-                    if (d && d.isRecording === true) { setRecording(true); }
-                    else if (d && d.isRecording === false) { setRecording(false); }
-                } catch(ex) {}
-            });
+            setInterval(detect, 300);
         })();
         </script>
         </body></html>
@@ -894,82 +903,6 @@ def render_response_input():
             pause_threshold=30.0,
             key=recorder_key
         )
-
-        rec_inline_html = """
-        <html><head><style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: transparent; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        @keyframes pulseDot {
-            0% { opacity: 0.4; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.15); }
-            100% { opacity: 0.4; transform: scale(0.8); }
-        }
-        @keyframes fadeSlide {
-            0% { opacity: 0; transform: translateY(4px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        .inline-rec {
-            display: none; align-items: center; justify-content: center; gap: 10px;
-            padding: 10px 20px;
-        }
-        .inline-rec.visible {
-            display: flex;
-            animation: fadeSlide 0.3s ease-out;
-        }
-        .rec-circle {
-            width: 12px; height: 12px; border-radius: 50%;
-            background: #e74c3c;
-            animation: pulseDot 1.2s ease-in-out infinite;
-            flex-shrink: 0;
-            box-shadow: 0 0 6px rgba(231,76,60,0.4);
-        }
-        .rec-label {
-            color: #e74c3c;
-            font-weight: 600; font-size: 0.95rem;
-            letter-spacing: 0.3px;
-        }
-        </style></head><body>
-        <div class="inline-rec" id="inlineRec">
-            <div class="rec-circle"></div>
-            <div class="rec-label">Recording answer...</div>
-        </div>
-        <script>
-        (function(){
-            var el = document.getElementById('inlineRec');
-            if (!el) return;
-
-            function handleMsg(e) {
-                try {
-                    var d = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data;
-                    if (d && d.isRecording === true) { el.classList.add('visible'); }
-                    else if (d && d.isRecording === false) { el.classList.remove('visible'); }
-                } catch(ex) {}
-            }
-
-            window.addEventListener('message', handleMsg);
-
-            try {
-                var pw = window.parent;
-                if (pw && pw !== window) {
-                    pw.addEventListener('message', function(e) {
-                        handleMsg(e);
-                        try {
-                            var d = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data;
-                            if (d && typeof d.isRecording === 'boolean') {
-                                var allIfs = pw.document.querySelectorAll('iframe');
-                                for (var i = 0; i < allIfs.length; i++) {
-                                    try { allIfs[i].contentWindow.postMessage(e.data, '*'); } catch(x) {}
-                                }
-                            }
-                        } catch(ex) {}
-                    });
-                }
-            } catch(e) {}
-        })();
-        </script>
-        </body></html>
-        """
-        components.html(rec_inline_html, height=50)
 
         if audio_bytes:
             st.session_state.recorded_audio = audio_bytes
