@@ -895,11 +895,22 @@ def render_response_input():
         """
         components.html(mic_html, height=230)
 
+        st.markdown("""
+        <style>
+        .stAudioRecorder, div[data-testid="stAudioInput"] {
+            display: flex; justify-content: center; margin-top: -6px;
+        }
+        .stAudioRecorder iframe, div[data-testid="stAudioInput"] iframe {
+            border: none !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
         audio_bytes = audio_recorder(
-            text="",
+            text="Click to Record",
             recording_color="#e74c3c",
             neutral_color="#4a6fd0",
-            icon_size="2x",
+            icon_size="3x",
             pause_threshold=30.0,
             key=recorder_key
         )
