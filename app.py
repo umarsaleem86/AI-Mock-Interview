@@ -938,7 +938,7 @@ def render_response_input():
         components.html(mic_html, height=230)
 
         audio_bytes = audio_recorder(
-            text="Click the mic button to START / STOP the recording",
+            text="",
             recording_color="#e74c3c",
             neutral_color="#4a6fd0",
             icon_size="2x",
@@ -946,7 +946,7 @@ def render_response_input():
             key=recorder_key
         )
 
-        timer_html = """
+        mic_bar_html = """
         <html><head><style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: transparent; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -955,17 +955,59 @@ def render_response_input():
             50% { opacity: 1; transform: scale(1.15); }
             100% { opacity: 0.4; transform: scale(0.8); }
         }
+        @keyframes countPop {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
         @keyframes fadeIn {
             0% { opacity: 0; transform: translateY(4px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-        .timer-wrap {
-            display: none; align-items: center; justify-content: center; gap: 10px;
-            padding: 10px 20px;
+        @keyframes ringPulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.8); opacity: 0; }
         }
-        .timer-wrap.visible {
-            display: flex;
-            animation: fadeIn 0.3s ease-out;
+        .bar {
+            display: flex; align-items: center; justify-content: center; gap: 14px;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, rgba(59,95,192,0.07), rgba(91,79,200,0.07));
+            border: 1px solid rgba(120,100,200,0.15);
+            border-radius: 14px;
+            min-height: 52px;
+            transition: all 0.3s ease;
+        }
+        .bar.recording {
+            background: linear-gradient(135deg, rgba(231,76,60,0.06), rgba(255,100,80,0.06));
+            border-color: rgba(231,76,60,0.2);
+        }
+        .bar.countdown {
+            background: linear-gradient(135deg, rgba(255,165,0,0.08), rgba(255,200,50,0.08));
+            border-color: rgba(255,165,0,0.25);
+        }
+        .idle-content, .rec-content, .cd-content {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .rec-content, .cd-content { display: none; }
+        .bar.recording .idle-content { display: none; }
+        .bar.recording .rec-content { display: flex; animation: fadeIn 0.3s ease-out; }
+        .bar.countdown .idle-content { display: none; }
+        .bar.countdown .cd-content { display: flex; }
+        .idle-icon { font-size: 1.1rem; }
+        .idle-text {
+            color: #5b6a8a; font-weight: 500; font-size: 0.92rem;
+            letter-spacing: 0.2px;
+        }
+        .idle-text strong { color: #3b5fc0; font-weight: 700; }
+        .idle-keys {
+            display: flex; gap: 6px;
+        }
+        .key-badge {
+            background: rgba(59,95,192,0.1); color: #3b5fc0;
+            font-weight: 700; font-size: 0.75rem; text-transform: uppercase;
+            padding: 3px 10px; border-radius: 6px;
+            border: 1px solid rgba(59,95,192,0.15);
+            letter-spacing: 0.5px;
         }
         .rec-dot {
             width: 10px; height: 10px; border-radius: 50%;
@@ -974,31 +1016,62 @@ def render_response_input():
             flex-shrink: 0;
             box-shadow: 0 0 6px rgba(231,76,60,0.4);
         }
-        .rec-label {
-            color: #e74c3c; font-weight: 600; font-size: 0.95rem;
-            letter-spacing: 0.3px;
-        }
-        .timer-display {
-            color: #2d3748; font-weight: 700; font-size: 1.1rem;
+        .rec-label { color: #e74c3c; font-weight: 600; font-size: 0.95rem; }
+        .timer-badge {
+            color: #c0392b; font-weight: 700; font-size: 1.05rem;
             font-variant-numeric: tabular-nums;
-            min-width: 52px; text-align: center;
             background: rgba(231,76,60,0.08);
             border: 1px solid rgba(231,76,60,0.15);
-            border-radius: 8px; padding: 4px 12px;
+            border-radius: 8px; padding: 3px 12px;
+            min-width: 52px; text-align: center;
+        }
+        .cd-num {
+            font-size: 1.8rem; font-weight: 800; color: #e67e22;
+            animation: countPop 0.6s ease-out;
+            min-width: 30px; text-align: center;
+            text-shadow: 0 2px 8px rgba(230,126,34,0.3);
+        }
+        .cd-label { color: #b8860b; font-weight: 600; font-size: 0.95rem; }
+        .cd-ring {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid rgba(230,126,34,0.3);
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .cd-ring::after {
+            content: ''; position: absolute; inset: -4px;
+            border-radius: 50%; border: 2px solid rgba(230,126,34,0.15);
+            animation: ringPulse 1s ease-out infinite;
         }
         </style></head><body>
-        <div class="timer-wrap" id="tw">
-            <div class="rec-dot"></div>
-            <span class="rec-label">Recording answer...</span>
-            <span class="timer-display" id="td">0:00</span>
+        <div class="bar" id="bar">
+            <div class="idle-content">
+                <span class="idle-icon">🎙️</span>
+                <span class="idle-text">Tap the mic to <strong>START</strong></span>
+                <span class="idle-keys">
+                    <span class="key-badge">Start</span>
+                    <span class="key-badge">Stop</span>
+                </span>
+            </div>
+            <div class="cd-content" id="cdContent">
+                <div class="cd-ring"><span class="cd-num" id="cdNum">3</span></div>
+                <span class="cd-label">Get ready to speak...</span>
+            </div>
+            <div class="rec-content">
+                <div class="rec-dot"></div>
+                <span class="rec-label">Recording answer...</span>
+                <span class="timer-badge" id="td">0:00</span>
+            </div>
         </div>
         <script>
         (function(){
-            var tw = document.getElementById('tw');
+            var bar = document.getElementById('bar');
             var td = document.getElementById('td');
-            if (!tw || !td) return;
+            var cdNum = document.getElementById('cdNum');
+            if (!bar || !td) return;
             var startTime = 0;
             var timerInterval = null;
+            var countdownInterval = null;
 
             function fmt(sec) {
                 var m = Math.floor(sec / 60);
@@ -1006,30 +1079,49 @@ def render_response_input():
                 return m + ':' + (s < 10 ? '0' : '') + s;
             }
 
-            function startTimer() {
-                if (timerInterval) return;
-                startTime = Date.now();
-                td.textContent = '0:00';
-                tw.classList.add('visible');
-                timerInterval = setInterval(function() {
-                    var elapsed = Math.floor((Date.now() - startTime) / 1000);
-                    td.textContent = fmt(elapsed);
+            function startCountdown() {
+                if (countdownInterval) clearInterval(countdownInterval);
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                bar.classList.remove('recording');
+                bar.classList.add('countdown');
+                var count = 3;
+                cdNum.textContent = count;
+                cdNum.style.animation = 'none';
+                void cdNum.offsetWidth;
+                cdNum.style.animation = 'countPop 0.6s ease-out';
+                countdownInterval = setInterval(function() {
+                    count--;
+                    if (count > 0) {
+                        cdNum.textContent = count;
+                        cdNum.style.animation = 'none';
+                        void cdNum.offsetWidth;
+                        cdNum.style.animation = 'countPop 0.6s ease-out';
+                    } else {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                        bar.classList.remove('countdown');
+                        bar.classList.add('recording');
+                        startTime = Date.now();
+                        td.textContent = '0:00';
+                        timerInterval = setInterval(function() {
+                            var elapsed = Math.floor((Date.now() - startTime) / 1000);
+                            td.textContent = fmt(elapsed);
+                        }, 1000);
+                    }
                 }, 1000);
             }
 
-            function stopTimer() {
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                }
-                tw.classList.remove('visible');
+            function stopAll() {
+                if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                bar.classList.remove('recording', 'countdown');
             }
 
             function handleMsg(e) {
                 try {
                     var d = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data;
-                    if (d && d.isRecording === true) startTimer();
-                    else if (d && d.isRecording === false) stopTimer();
+                    if (d && d.isRecording === true) startCountdown();
+                    else if (d && d.isRecording === false) stopAll();
                 } catch(ex) {}
             }
 
@@ -1043,7 +1135,7 @@ def render_response_input():
         </script>
         </body></html>
         """
-        components.html(timer_html, height=50)
+        components.html(mic_bar_html, height=60)
 
         if audio_bytes:
             st.session_state.recorded_audio = audio_bytes
