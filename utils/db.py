@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import bcrypt
@@ -39,9 +40,65 @@ def init_db():
             avg_score FLOAT
         )
     """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            token VARCHAR(64) PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
     conn.commit()
     cur.close()
     conn.close()
+
+
+def create_session(user_id: int) -> str:
+    token = uuid.uuid4().hex
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO sessions (token, user_id) VALUES (%s, %s)", (token, user_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return token
+    except Exception:
+        return ""
+
+
+def get_session(token: str) -> dict:
+    if not token:
+        return {}
+    try:
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT s.user_id, u.username FROM sessions s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.token = %s
+        """, (token,))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        if row:
+            return {"user_id": row["user_id"], "username": row["username"]}
+        return {}
+    except Exception:
+        return {}
+
+
+def delete_session(token: str):
+    if not token:
+        return
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM sessions WHERE token = %s", (token,))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception:
+        pass
 
 
 def create_user(username: str, password: str) -> dict:

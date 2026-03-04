@@ -38,9 +38,10 @@ This uses Replit AI Integrations for OpenAI access - no API key required. Charge
 - Always-on: No toggle needed, both features are always available.
 
 ## Database
-PostgreSQL (Replit built-in) with two tables:
+PostgreSQL (Replit built-in) with three tables:
 - `users`: id, username (unique), password_hash (bcrypt), created_at
 - `interviews`: id, user_id (FK), created_at, seniority, demo_mode, cv_text, jd_text, questions/answers/scores/tips/justifications (JSONB), report, avg_score
+- `sessions`: token (PK, varchar(64)), user_id (FK), created_at — persistent login sessions via URL query params
 
 ## Configuration
 All model and voice settings are in `config.py`:

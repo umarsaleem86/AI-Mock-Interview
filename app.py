@@ -15,6 +15,7 @@ import pandas as pd
 from config import SENIORITY_LEVELS, TOTAL_QUESTIONS, ADMIN_USERNAME
 from utils.pdf_parser import parse_document
 from utils.voice import speech_to_text, text_to_speech
+from utils.db import create_session, get_session, delete_session
 from utils.interview_engine import (
     get_first_question,
     evaluate_answer_and_get_next,
@@ -264,6 +265,24 @@ def inject_custom_css():
     """, unsafe_allow_html=True)
 
 
+def _get_cookie_token():
+    params = st.query_params
+    return params.get("session", "")
+
+
+def _restore_session():
+    token = _get_cookie_token()
+    if token:
+        session_data = get_session(token)
+        if session_data:
+            st.session_state.logged_in = True
+            st.session_state.user_id = session_data["user_id"]
+            st.session_state.username = session_data["username"]
+            st.session_state.session_token = token
+            return True
+    return False
+
+
 def init_session_state():
     defaults = {
         'logged_in': False,
@@ -292,11 +311,17 @@ def init_session_state():
         'quick_start_role': '',
         'setup_mode': 'quick',
         'preferred_input': 'audio',
+        'session_token': '',
+        'session_restored': False,
     }
 
     for key, value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = value
+
+    if not st.session_state.logged_in and not st.session_state.session_restored:
+        st.session_state.session_restored = True
+        _restore_session()
 
 
 def reset_interview():
@@ -334,9 +359,12 @@ def render_auth_page():
                 if login_username and login_password:
                     result = verify_user(login_username, login_password)
                     if result["success"]:
+                        token = create_session(result["user_id"])
                         st.session_state.logged_in = True
                         st.session_state.user_id = result["user_id"]
                         st.session_state.username = result["username"]
+                        st.session_state.session_token = token
+                        st.query_params["session"] = token
                         st.rerun()
                     else:
                         st.error(result["error"])
@@ -357,9 +385,12 @@ def render_auth_page():
                 else:
                     result = create_user(reg_username, reg_password)
                     if result["success"]:
+                        token = create_session(result["user_id"])
                         st.session_state.logged_in = True
                         st.session_state.user_id = result["user_id"]
                         st.session_state.username = result["username"]
+                        st.session_state.session_token = token
+                        st.query_params["session"] = token
                         st.rerun()
                     else:
                         st.error(result["error"])
@@ -387,8 +418,12 @@ def render_sidebar():
                 st.rerun()
 
         if st.button("🚪 Logout", use_container_width=True):
+            token = st.session_state.get('session_token', '')
+            if token:
+                delete_session(token)
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
+            st.query_params.clear()
             st.rerun()
 
         st.divider()
