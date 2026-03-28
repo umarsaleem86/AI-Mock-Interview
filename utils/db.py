@@ -2,20 +2,27 @@ import os
 import json
 import uuid
 import sqlite3
-from datetime import datetime
 
 import bcrypt
 
 try:
     import psycopg2
-    from psycopg2.extras import RealDictCursor
+    from psycopg2.extras import RealDictCursor, Json
 except ImportError:
     psycopg2 = None
     RealDictCursor = None
+    Json = None
+
+
+def _get_database_url() -> str:
+    database_url = os.getenv("DATABASE_URL", "").strip()
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    return database_url
 
 
 def _using_postgres() -> bool:
-    return bool(os.getenv("DATABASE_URL")) and psycopg2 is not None
+    return bool(_get_database_url()) and psycopg2 is not None
 
 
 def _dict_rows(cursor):
@@ -32,9 +39,10 @@ def _dict_row(cursor):
 
 
 def get_connection():
-    database_url = os.getenv("DATABASE_URL")
+    database_url = _get_database_url()
+
     if database_url and psycopg2 is not None:
-        return psycopg2.connect(database_url)
+        return psycopg2.connect(database_url, cursor_factory=RealDictCursor)
 
     conn = sqlite3.connect("interview_ai.db", check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -124,9 +132,12 @@ def init_db():
 
 def create_session(user_id: int) -> str:
     token = uuid.uuid4().hex
+    conn = None
+    cur = None
     try:
         conn = get_connection()
         cur = conn.cursor()
+
         if _using_postgres():
             cur.execute(
                 "INSERT INTO sessions (token, user_id) VALUES (%s, %s)",
@@ -137,23 +148,31 @@ def create_session(user_id: int) -> str:
                 "INSERT INTO sessions (token, user_id) VALUES (?, ?)",
                 (token, user_id),
             )
+
         conn.commit()
-        cur.close()
-        conn.close()
         return token
     except Exception:
+        if conn:
+            conn.rollback()
         return ""
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_session(token: str) -> dict:
     if not token:
         return {}
 
+    conn = None
+    cur = None
     try:
         conn = get_connection()
+        cur = conn.cursor()
 
         if _using_postgres():
-            cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute("""
                 SELECT s.user_id, u.username
                 FROM sessions s
@@ -162,7 +181,6 @@ def get_session(token: str) -> dict:
             """, (token,))
             row = cur.fetchone()
         else:
-            cur = conn.cursor()
             cur.execute("""
                 SELECT s.user_id, u.username
                 FROM sessions s
@@ -171,36 +189,47 @@ def get_session(token: str) -> dict:
             """, (token,))
             row = _dict_row(cur)
 
-        cur.close()
-        conn.close()
-
         if row:
             return {"user_id": row["user_id"], "username": row["username"]}
         return {}
     except Exception:
         return {}
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def delete_session(token: str):
     if not token:
         return
 
+    conn = None
+    cur = None
     try:
         conn = get_connection()
         cur = conn.cursor()
+
         if _using_postgres():
             cur.execute("DELETE FROM sessions WHERE token = %s", (token,))
         else:
             cur.execute("DELETE FROM sessions WHERE token = ?", (token,))
+
         conn.commit()
-        cur.close()
-        conn.close()
     except Exception:
-        pass
+        if conn:
+            conn.rollback()
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def create_user(username: str, password: str) -> dict:
     username = username.strip().lower()
+
     if len(username) < 3:
         return {"success": False, "error": "Username must be at least 3 characters"}
     if len(password) < 6:
@@ -212,16 +241,15 @@ def create_user(username: str, password: str) -> dict:
     cur = None
     try:
         conn = get_connection()
+        cur = conn.cursor()
 
         if _using_postgres():
-            cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute(
                 "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id, username",
                 (username, password_hash),
             )
             user = cur.fetchone()
         else:
-            cur = conn.cursor()
             cur.execute(
                 "INSERT INTO users (username, password_hash) VALUES (?, ?)",
                 (username, password_hash),
@@ -234,46 +262,45 @@ def create_user(username: str, password: str) -> dict:
             user = _dict_row(cur)
 
         conn.commit()
-        cur.close()
-        conn.close()
         return {"success": True, "user_id": user["id"], "username": user["username"]}
 
     except Exception as e:
         if conn:
             conn.rollback()
+
+        message = str(e).lower()
+        if "unique" in message or "duplicate key" in message:
+            return {"success": False, "error": "Username already taken"}
+        return {"success": False, "error": str(e)}
+
+    finally:
         if cur:
             cur.close()
         if conn:
             conn.close()
 
-        message = str(e).lower()
-        if "unique" in message:
-            return {"success": False, "error": "Username already taken"}
-        return {"success": False, "error": str(e)}
-
 
 def verify_user(username: str, password: str) -> dict:
     username = username.strip().lower()
+
+    conn = None
+    cur = None
     try:
         conn = get_connection()
+        cur = conn.cursor()
 
         if _using_postgres():
-            cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute(
                 "SELECT id, username, password_hash FROM users WHERE username = %s",
                 (username,),
             )
             user = cur.fetchone()
         else:
-            cur = conn.cursor()
             cur.execute(
                 "SELECT id, username, password_hash FROM users WHERE username = ?",
                 (username,),
             )
             user = _dict_row(cur)
-
-        cur.close()
-        conn.close()
 
         if not user:
             return {"success": False, "error": "Invalid username or password"}
@@ -282,8 +309,15 @@ def verify_user(username: str, password: str) -> dict:
             return {"success": True, "user_id": user["id"], "username": user["username"]}
 
         return {"success": False, "error": "Invalid username or password"}
+
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def save_interview(
@@ -304,9 +338,9 @@ def save_interview(
     cur = None
     try:
         conn = get_connection()
+        cur = conn.cursor()
 
         if _using_postgres():
-            cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute("""
                 INSERT INTO interviews (
                     user_id, seniority, demo_mode, cv_text, jd_text,
@@ -315,14 +349,22 @@ def save_interview(
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             """, (
-                user_id, seniority, demo_mode, cv_text, jd_text,
-                json.dumps(questions), json.dumps(answers), json.dumps(scores),
-                json.dumps(tips), json.dumps(justifications), report, avg_score
+                user_id,
+                seniority,
+                demo_mode,
+                cv_text,
+                jd_text,
+                Json(questions),
+                Json(answers),
+                Json(scores),
+                Json(tips),
+                Json(justifications),
+                report,
+                avg_score,
             ))
             result = cur.fetchone()
             interview_id = result["id"]
         else:
-            cur = conn.cursor()
             cur.execute("""
                 INSERT INTO interviews (
                     user_id, seniority, demo_mode, cv_text, jd_text,
@@ -330,66 +372,77 @@ def save_interview(
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                user_id, seniority, int(demo_mode), cv_text, jd_text,
-                json.dumps(questions), json.dumps(answers), json.dumps(scores),
-                json.dumps(tips), json.dumps(justifications), report, avg_score
+                user_id,
+                seniority,
+                int(demo_mode),
+                cv_text,
+                jd_text,
+                json.dumps(questions),
+                json.dumps(answers),
+                json.dumps(scores),
+                json.dumps(tips),
+                json.dumps(justifications),
+                report,
+                avg_score,
             ))
             interview_id = cur.lastrowid
 
         conn.commit()
-        cur.close()
-        conn.close()
         return {"success": True, "interview_id": interview_id}
+
     except Exception as e:
         if conn:
             conn.rollback()
+        return {"success": False, "error": str(e)}
+
+    finally:
         if cur:
             cur.close()
         if conn:
             conn.close()
-        return {"success": False, "error": str(e)}
 
 
 def get_all_interviews_admin() -> list:
+    conn = None
+    cur = None
     try:
         conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT i.id, u.username, i.created_at, i.seniority, i.demo_mode,
+                   i.cv_text, i.jd_text, i.questions, i.answers, i.scores,
+                   i.tips, i.justifications, i.report, i.avg_score
+            FROM interviews i
+            JOIN users u ON i.user_id = u.id
+            ORDER BY i.created_at DESC
+        """)
 
         if _using_postgres():
-            cur = conn.cursor(cursor_factory=RealDictCursor)
-            cur.execute("""
-                SELECT i.id, u.username, i.created_at, i.seniority, i.demo_mode,
-                       i.cv_text, i.jd_text, i.questions, i.answers, i.scores,
-                       i.tips, i.justifications, i.report, i.avg_score
-                FROM interviews i
-                JOIN users u ON i.user_id = u.id
-                ORDER BY i.created_at DESC
-            """)
             rows = cur.fetchall()
         else:
-            cur = conn.cursor()
-            cur.execute("""
-                SELECT i.id, u.username, i.created_at, i.seniority, i.demo_mode,
-                       i.cv_text, i.jd_text, i.questions, i.answers, i.scores,
-                       i.tips, i.justifications, i.report, i.avg_score
-                FROM interviews i
-                JOIN users u ON i.user_id = u.id
-                ORDER BY i.created_at DESC
-            """)
             rows = _dict_rows(cur)
 
-        cur.close()
-        conn.close()
         return rows
+
     except Exception:
         return []
 
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
 
 def get_all_users_admin() -> list:
+    conn = None
+    cur = None
     try:
         conn = get_connection()
+        cur = conn.cursor()
 
         if _using_postgres():
-            cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute("""
                 SELECT u.id, u.username, u.created_at,
                        COUNT(i.id) AS interview_count,
@@ -401,7 +454,6 @@ def get_all_users_admin() -> list:
             """)
             rows = cur.fetchall()
         else:
-            cur = conn.cursor()
             cur.execute("""
                 SELECT u.id, u.username, u.created_at,
                        COUNT(i.id) AS interview_count,
@@ -413,19 +465,26 @@ def get_all_users_admin() -> list:
             """)
             rows = _dict_rows(cur)
 
-        cur.close()
-        conn.close()
         return rows
+
     except Exception:
         return []
 
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
 
 def get_user_interviews(user_id: int) -> list:
+    conn = None
+    cur = None
     try:
         conn = get_connection()
+        cur = conn.cursor()
 
         if _using_postgres():
-            cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute("""
                 SELECT id, created_at, seniority, demo_mode, avg_score,
                        questions, answers, scores, tips, justifications, report
@@ -435,7 +494,6 @@ def get_user_interviews(user_id: int) -> list:
             """, (user_id,))
             interviews = cur.fetchall()
         else:
-            cur = conn.cursor()
             cur.execute("""
                 SELECT id, created_at, seniority, demo_mode, avg_score,
                        questions, answers, scores, tips, justifications, report
@@ -445,8 +503,7 @@ def get_user_interviews(user_id: int) -> list:
             """, (user_id,))
             interviews = _dict_rows(cur)
 
-        cur.close()
-        conn.close()
         return interviews
+
     except Exception:
         return []
