@@ -5,7 +5,7 @@ Supports PDF, Word (.docx), and plain text files.
 
 import io
 from typing import Tuple
-from Pypdf import PdfReader
+from pypdf import PdfReader
 from docx import Document
 
 
