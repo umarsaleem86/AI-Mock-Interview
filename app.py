@@ -142,64 +142,34 @@ def inject_custom_css():
         transition: all 0.25s ease;
     }
 
-/* =========================
-   BLUE SELECTED AREAS FIX
-   ========================= */
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, var(--primary), var(--primary-2)) !important;
+        color: #ffffff !important;
+        box-shadow: 0 8px 20px rgba(111,134,255,0.26);
+    }
 
-/* Tabs (Selected) */
-.stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, var(--primary), var(--primary-2)) !important;
-    color: #ffffff !important;
-    box-shadow: 0 8px 20px rgba(111,134,255,0.26);
-}
-
-/* FORCE all nested text/icons inside selected tab */
-.stTabs [aria-selected="true"],
-.stTabs [aria-selected="true"] * {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
-    opacity: 1 !important;
-}
-
-/* Primary Buttons */
-.stButton > button[kind="primary"] {
-    background: linear-gradient(135deg, var(--primary), var(--primary-2)) !important;
-    color: #ffffff !important;
-    box-shadow: 0 10px 20px rgba(111,134,255,0.24);
-}
-
-/* FORCE all nested content inside buttons */
-.stButton > button[kind="primary"],
-.stButton > button[kind="primary"] * {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
-    opacity: 1 !important;
-}
-
-/* Fix icons specifically */
-.stButton > button[kind="primary"] svg,
-.stTabs [aria-selected="true"] svg {
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
-}
-
-/* Fix segmented controls (Streamlit tabs/pills) */
-[data-baseweb="tab"][aria-selected="true"],
-[data-baseweb="tab"][aria-selected="true"] * {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
-}
+    .stTabs [aria-selected="true"],
+    .stTabs [aria-selected="true"] * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+        opacity: 1 !important;
+    }
 
     .stButton > button[kind="primary"] {
         background: linear-gradient(135deg, var(--primary), var(--primary-2)) !important;
         color: #ffffff !important;
         box-shadow: 0 10px 20px rgba(111,134,255,0.24);
+    }
+
+    .stButton > button[kind="primary"],
+    .stButton > button[kind="primary"] * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+        opacity: 1 !important;
     }
 
     .stButton > button[kind="primary"]:hover {
@@ -380,34 +350,35 @@ def inject_custom_css():
     .processing-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(238, 241, 249, 0.58);
-        backdrop-filter: blur(7px);
+        background: rgba(238, 241, 249, 0.64);
+        backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 999999;
+        padding: 24px;
     }
 
     .processing-modal {
-        width: min(660px, 92vw);
-        background: rgba(255,255,255,0.82);
+        width: min(760px, 94vw);
+        background: rgba(255,255,255,0.84);
         border: 1px solid rgba(123,132,176,0.18);
-        border-radius: 28px;
+        border-radius: 32px;
         box-shadow: 0 22px 60px rgba(98,109,153,0.18);
-        padding: 34px 30px;
+        padding: 42px 34px;
         text-align: center;
         backdrop-filter: blur(16px);
     }
 
     .processing-icon {
-        width: 74px;
-        height: 74px;
-        margin: 0 auto 18px auto;
-        border-radius: 22px;
+        width: 92px;
+        height: 92px;
+        margin: 0 auto 22px auto;
+        border-radius: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
+        font-size: 2.3rem;
         background: linear-gradient(135deg, var(--primary), var(--primary-2));
         color: white;
         box-shadow: 0 14px 30px rgba(111,134,255,0.22);
@@ -415,18 +386,21 @@ def inject_custom_css():
     }
 
     .processing-title {
-        font-size: 1.45rem;
+        font-size: 1.9rem;
         font-weight: 800;
         color: var(--text-primary);
-        margin-bottom: 10px;
+        margin-bottom: 14px;
         line-height: 1.35;
     }
 
     .processing-subtitle {
-        font-size: 1rem;
+        font-size: 1.08rem;
         color: var(--text-secondary);
-        line-height: 1.7;
-        margin-bottom: 18px;
+        line-height: 1.8;
+        margin-bottom: 24px;
+        max-width: 620px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .processing-status {
@@ -438,15 +412,16 @@ def inject_custom_css():
         color: var(--text-primary);
         border: 1px solid rgba(111,134,255,0.14);
         border-radius: 999px;
-        padding: 10px 18px;
-        font-size: 0.98rem;
-        font-weight: 700;
+        padding: 14px 28px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        min-width: 320px;
     }
 
     .processing-dots::after {
-        content: "";
+        content: ".";
         display: inline-block;
-        width: 24px;
+        width: 28px;
         text-align: left;
         animation: processingDots 1.4s infinite steps(1, end);
     }
@@ -461,6 +436,16 @@ def inject_custom_css():
         border-radius: 18px;
         padding: 16px;
         box-shadow: 0 8px 22px rgba(98,109,153,0.08);
+    }
+
+    [data-testid="stMetricValue"] {
+        font-weight: 800 !important;
+        color: var(--text-primary) !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        font-weight: 600 !important;
+        color: var(--text-secondary) !important;
     }
 
     hr {
@@ -533,13 +518,14 @@ def init_session_state():
         "pending_start": False,
         "pending_text_answer": "",
         "pending_audio_bytes": None,
+        "pending_report_generation": False,
         "report_generated": False,
         "report_text": "",
         "auto_speak_question": "",
         "has_recording": False,
         "recorded_audio": None,
         "quick_start_role": "",
-        "setup_mode": "quick",
+        "setup_mode": "full",
         "preferred_input": "audio",
         "session_token": "",
         "session_restored": False,
@@ -554,7 +540,6 @@ def init_session_state():
     if not st.session_state.logged_in and not st.session_state.session_restored:
         st.session_state.session_restored = True
         _restore_session()
-
 
 def reset_interview():
     st.session_state.messages = []
@@ -572,6 +557,7 @@ def reset_interview():
     st.session_state.pending_start = False
     st.session_state.pending_text_answer = ""
     st.session_state.pending_audio_bytes = None
+    st.session_state.pending_report_generation = False
     st.session_state.report_generated = False
     st.session_state.report_text = ""
     st.session_state.auto_speak_question = ""
@@ -579,10 +565,12 @@ def reset_interview():
     st.session_state.recorded_audio = None
     st.session_state.recorder_version = 0
 
-    keys_to_delete = [k for k in st.session_state.keys() if str(k).startswith("tts_cache_") or str(k).startswith("play_question_")]
+    keys_to_delete = [
+        k for k in st.session_state.keys()
+        if str(k).startswith("tts_cache_") or str(k).startswith("play_question_")
+    ]
     for k in keys_to_delete:
         del st.session_state[k]
-
 
 def render_auth_page():
     col_spacer1, col_main, col_spacer2 = st.columns([1, 2, 1])
@@ -682,7 +670,87 @@ def render_sidebar():
 def render_interview_sidebar():
     st.header("📄 Interview Setup")
 
-    quick_tab, full_tab = st.tabs(["⚡ Quick Start", "📄 Full Setup"])
+    full_tab, quick_tab = st.tabs(["📄 Full Setup", "⚡ Quick Start"])
+
+    with full_tab:
+        st.session_state.setup_mode = "full"
+
+        st.markdown("*Upload your CV for tailored questions*")
+
+        full_role = st.text_input(
+            "Job Role",
+            value=st.session_state.job_role,
+            placeholder="e.g. Accountant, Admin Officer, Project Engineer...",
+            key="full_setup_job_role",
+        )
+        st.session_state.job_role = full_role
+
+        uploaded_file = st.file_uploader(
+            "Upload CV/Resume (PDF, Word, TXT)",
+            type=["pdf", "docx", "txt"],
+            key="cv_upload",
+        )
+
+        if uploaded_file:
+            cv_text, error = parse_document(uploaded_file)
+            if error:
+                st.error(f"⚠️ {error}")
+            else:
+                st.session_state.cv_text = cv_text
+                st.success(f"✅ CV loaded ({len(cv_text.split())} words)")
+
+        st.divider()
+
+        jd_text = st.text_area(
+            "Job Description (Optional)",
+            value=st.session_state.jd_text,
+            height=120,
+            placeholder="Paste job requirements here...",
+            key="full_setup_jd",
+        )
+        st.session_state.jd_text = jd_text
+
+        st.divider()
+
+        seniority_f = st.selectbox(
+            "Seniority Level",
+            SENIORITY_LEVELS,
+            index=SENIORITY_LEVELS.index(st.session_state.seniority),
+            key="seniority_full",
+        )
+        st.session_state.seniority = seniority_f
+
+        st.divider()
+
+        col1, col2 = st.columns(2)
+        with col1:
+            start_disabled = (
+                not st.session_state.cv_text
+                or not st.session_state.job_role.strip()
+                or st.session_state.interview_started
+                or st.session_state.processing
+            )
+
+            if st.button("▶️ Start", disabled=start_disabled, use_container_width=True, key="full_start_btn"):
+                cv_for_interview = st.session_state.cv_text
+                if st.session_state.job_role.strip():
+                    cv_for_interview = f"Target Role: {st.session_state.job_role.strip()}\n\n{cv_for_interview}"
+
+                st.session_state.cv_text = cv_for_interview
+                st.session_state.processing = True
+                st.session_state.processing_mode = "setup"
+                st.session_state.pending_start = True
+                st.rerun()
+
+        with col2:
+            if st.button("🔄 Restart", use_container_width=True, key="full_restart_btn"):
+                reset_interview()
+                st.rerun()
+
+        if not st.session_state.job_role.strip():
+            st.info("👆 Enter the target job role.")
+        elif not st.session_state.cv_text:
+            st.info("👆 Upload your CV to begin")
 
     with quick_tab:
         st.markdown("*Enter a role to start instantly — no CV needed*")
@@ -723,87 +791,6 @@ def render_interview_sidebar():
             if st.button("🔄 Restart", use_container_width=True, key="quick_restart_btn"):
                 reset_interview()
                 st.rerun()
-
-    with full_tab:
-        st.markdown("*Upload your CV for tailored questions*")
-
-        full_role = st.text_input(
-            "Job Role",
-            value=st.session_state.job_role,
-            placeholder="e.g. Accountant, Admin Officer, Project Engineer...",
-            key="full_setup_job_role",
-        )
-        st.session_state.job_role = full_role
-
-        uploaded_file = st.file_uploader(
-            "Upload CV/Resume (PDF, Word, TXT)",
-            type=["pdf", "docx", "txt"],
-            key="cv_upload",
-        )
-
-        if uploaded_file:
-            cv_text, error = parse_document(uploaded_file)
-            if error:
-                st.error(f"⚠️ {error}")
-            else:
-                st.session_state.cv_text = cv_text
-                st.success(f"✅ CV loaded ({len(cv_text.split())} words)")
-
-        st.divider()
-
-        jd_text = st.text_area(
-            "Job Description (Optional)",
-            value=st.session_state.jd_text if st.session_state.setup_mode == "full" else "",
-            height=120,
-            placeholder="Paste job requirements here...",
-            key="full_setup_jd",
-        )
-        st.session_state.jd_text = jd_text
-
-        st.divider()
-
-        seniority_f = st.selectbox(
-            "Seniority Level",
-            SENIORITY_LEVELS,
-            index=SENIORITY_LEVELS.index(st.session_state.seniority),
-            key="seniority_full",
-        )
-        st.session_state.seniority = seniority_f
-
-        st.divider()
-
-        col1, col2 = st.columns(2)
-        with col1:
-            start_disabled = (
-                not st.session_state.cv_text
-                or not st.session_state.job_role.strip()
-                or st.session_state.interview_started
-                or st.session_state.processing
-            )
-
-            if st.button("▶️ Start", disabled=start_disabled, use_container_width=True, key="full_start_btn"):
-                st.session_state.setup_mode = "full"
-
-                cv_for_interview = st.session_state.cv_text
-                if st.session_state.job_role.strip():
-                    cv_for_interview = f"Target Role: {st.session_state.job_role.strip()}\n\n{cv_for_interview}"
-
-                st.session_state.cv_text = cv_for_interview
-                st.session_state.processing = True
-                st.session_state.processing_mode = "setup"
-                st.session_state.pending_start = True
-                st.rerun()
-
-        with col2:
-            if st.button("🔄 Restart", use_container_width=True, key="full_restart_btn"):
-                reset_interview()
-                st.rerun()
-
-        if not st.session_state.job_role.strip():
-            st.info("👆 Enter the target job role.")
-        elif not st.session_state.cv_text:
-            st.info("👆 Upload your CV to begin")
-
 
 def _start_interview_now():
     reset_interview()
@@ -988,19 +975,66 @@ def run_pending_actions():
             st.session_state.processing_mode = ""
         st.rerun()
 
+    if st.session_state.pending_report_generation:
+        st.session_state.pending_report_generation = False
+
+        try:
+            report = generate_final_report(
+                st.session_state.cv_text,
+                st.session_state.jd_text,
+                st.session_state.seniority,
+                st.session_state.questions,
+                st.session_state.answers,
+                st.session_state.scores,
+                st.session_state.tips,
+                demo_mode=False,
+            )
+
+            st.session_state.report_generated = True
+            st.session_state.report_text = report
+
+            avg_score = sum(st.session_state.scores) / len(st.session_state.scores)
+            save_interview(
+                user_id=st.session_state.user_id,
+                seniority=st.session_state.seniority,
+                demo_mode=False,
+                cv_text=st.session_state.cv_text,
+                jd_text=st.session_state.jd_text,
+                questions=st.session_state.questions,
+                answers=st.session_state.answers,
+                scores=st.session_state.scores,
+                tips=st.session_state.tips,
+                justifications=st.session_state.justifications,
+                report=report,
+                avg_score=avg_score,
+            )
+
+        except Exception as e:
+            st.error(f"Failed to generate report: {str(e)}")
+        finally:
+            st.session_state.processing = False
+            st.session_state.processing_mode = ""
+        st.rerun()
 
 def render_processing_overlay():
     if not st.session_state.processing:
         return
 
     if st.session_state.processing_mode == "setup":
-        icon = "🎯"
-        title = "Setting up your interview, please wait"
+        icon = "📝"
+        title = "Setting up your interview, please wait..."
         subtitle = "Preparing your greeting, generating your first question, and getting everything ready."
         status_text = "Building your interview"
+
+    elif st.session_state.processing_mode == "report":
+        icon = "📝"
+        title = "Generating your personalised report, please wait..."
+        subtitle = "Reviewing your interview, summarising your strengths, identifying improvement areas, and preparing your personalised feedback report."
+        status_text = "Generating your report"
+
     else:
-        icon = "🤖"
-        title = "Transcribing and evaluating your response, please wait"
+        icon = "📝"
+        title = "Transcribing and evaluating your response, please wait..."
         subtitle = "Reviewing your answer, scoring it, generating your pro tip, and preparing the next question."
         status_text = "Analyzing your response"
 
@@ -1016,7 +1050,6 @@ def render_processing_overlay():
         </div>
     </div>
     """, unsafe_allow_html=True)
-
 
 def render_chat():
     question_idx = 0
@@ -1199,6 +1232,7 @@ def render_final_report():
 
     if st.session_state.report_generated:
         avg_score = sum(st.session_state.scores) / len(st.session_state.scores)
+        performance = "Excellent" if avg_score >= 8 else "Good" if avg_score >= 6 else "Needs Work"
 
         st.markdown("""
         <div style="background: rgba(255,255,255,0.72);
@@ -1209,14 +1243,34 @@ def render_final_report():
         </div>
         """, unsafe_allow_html=True)
 
-        cols = st.columns(3)
-        with cols[0]:
-            st.metric("Overall Performance", f"{avg_score:.1f}/10")
-        with cols[1]:
-            st.metric("Questions Answered", len(st.session_state.answers))
-        with cols[2]:
-            performance = "Excellent" if avg_score >= 8 else "Good" if avg_score >= 6 else "Needs Work"
-            st.metric("Performance Level", performance)
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.markdown(f"""
+            <div style="background: rgba(255,255,255,0.70); border: 1px solid rgba(123,132,176,0.16);
+                        border-radius: 20px; padding: 22px; box-shadow: 0 10px 26px rgba(98,109,153,0.08);">
+                <div style="font-size: 1rem; color: #677095; margin-bottom: 12px;">Overall Performance</div>
+                <div style="font-size: 3.5rem; font-weight: 800; color: #6672a3; line-height: 1;">{avg_score:.1f}/10</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with col2:
+            st.markdown(f"""
+            <div style="background: rgba(255,255,255,0.70); border: 1px solid rgba(123,132,176,0.16);
+                        border-radius: 20px; padding: 22px; box-shadow: 0 10px 26px rgba(98,109,153,0.08);">
+                <div style="font-size: 1rem; color: #677095; margin-bottom: 12px;">Questions Answered</div>
+                <div style="font-size: 3.5rem; font-weight: 800; color: #6672a3; line-height: 1;">{len(st.session_state.answers)}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with col3:
+            st.markdown(f"""
+            <div style="background: rgba(255,255,255,0.70); border: 1px solid rgba(123,132,176,0.16);
+                        border-radius: 20px; padding: 22px; box-shadow: 0 10px 26px rgba(98,109,153,0.08);">
+                <div style="font-size: 1rem; color: #677095; margin-bottom: 12px;">Performance Level</div>
+                <div style="font-size: 3.2rem; font-weight: 800; color: #6672a3; line-height: 1.05;">{performance}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
         st.markdown("---")
         st.markdown(st.session_state.report_text)
@@ -1225,42 +1279,10 @@ def render_final_report():
         return
 
     if st.button("📊 Generate Performance Report", type="primary", use_container_width=True):
-        try:
-            report = generate_final_report(
-                st.session_state.cv_text,
-                st.session_state.jd_text,
-                st.session_state.seniority,
-                st.session_state.questions,
-                st.session_state.answers,
-                st.session_state.scores,
-                st.session_state.tips,
-                demo_mode=False,
-            )
-
-            st.session_state.report_generated = True
-            st.session_state.report_text = report
-
-            avg_score = sum(st.session_state.scores) / len(st.session_state.scores)
-            save_interview(
-                user_id=st.session_state.user_id,
-                seniority=st.session_state.seniority,
-                demo_mode=False,
-                cv_text=st.session_state.cv_text,
-                jd_text=st.session_state.jd_text,
-                questions=st.session_state.questions,
-                answers=st.session_state.answers,
-                scores=st.session_state.scores,
-                tips=st.session_state.tips,
-                justifications=st.session_state.justifications,
-                report=report,
-                avg_score=avg_score,
-            )
-
-            st.rerun()
-
-        except Exception as e:
-            st.error(f"Failed to generate report: {str(e)}")
-
+        st.session_state.processing = True
+        st.session_state.processing_mode = "report"
+        st.session_state.pending_report_generation = True
+        st.rerun()
 
 def get_user_timezone():
     if st.session_state.user_tz is None:
