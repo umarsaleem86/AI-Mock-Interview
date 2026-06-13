@@ -6,3 +6,4 @@ python-docx
 pypdf
 bcrypt
 openai
+requests
