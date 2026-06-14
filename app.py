@@ -3,6 +3,11 @@ AI Mock Interview Platform
 Main Streamlit application with interview functionality.
 """
 
+import uuid
+from utils.email_service import send_verification_email
+from utils.db import verify_email_token
+
+
 import html
 import json
 from datetime import datetime, timedelta, timezone
@@ -588,45 +593,47 @@ def render_auth_page():
         tab_login, tab_register = st.tabs(["🔑 Login", "✨ Create Account"])
 
         with tab_login:
-            login_username = st.text_input("Username", key="login_username", placeholder="Enter your username")
+            login_email = st.text_input("Email Address", key="login_email", placeholder="Enter your email")
             login_password = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
 
             if st.button("Login", type="primary", use_container_width=True, key="login_btn"):
-                if login_username and login_password:
-                    result = verify_user(login_username, login_password)
+                if login_email and login_password:
+                    result = verify_user(login_email, login_password)
                     if result["success"]:
                         token = create_session(result["user_id"])
                         st.session_state.logged_in = True
                         st.session_state.user_id = result["user_id"]
-                        st.session_state.username = result["username"]
+                        st.session_state.username = result["email"]
+                        st.session_state.email = result["email"]
                         st.session_state.session_token = token
                         st.query_params["session"] = token
                         st.rerun()
                     else:
                         st.error(result["error"])
                 else:
-                    st.warning("Please enter both username and password")
+                    st.warning("Please enter both email and password")
 
         with tab_register:
-            reg_username = st.text_input("Choose a Username", key="reg_username", placeholder="At least 3 characters")
+            reg_email = st.text_input("Email Address", key="reg_email", placeholder="your@email.com")
             reg_password = st.text_input("Choose a Password", type="password", key="reg_password", placeholder="At least 6 characters")
             reg_password2 = st.text_input("Confirm Password", type="password", key="reg_password2", placeholder="Re-enter your password")
 
             if st.button("Create Account", type="primary", use_container_width=True, key="register_btn"):
-                if not reg_username or not reg_password:
+                if not reg_email or not reg_password:
                     st.warning("Please fill in all fields")
                 elif reg_password != reg_password2:
                     st.error("Passwords do not match")
                 else:
-                    result = create_user(reg_username, reg_password)
+                    verification_token = uuid.uuid4().hex
+                    result = create_user(reg_email, reg_password, verification_token)
+
                     if result["success"]:
-                        token = create_session(result["user_id"])
-                        st.session_state.logged_in = True
-                        st.session_state.user_id = result["user_id"]
-                        st.session_state.username = result["username"]
-                        st.session_state.session_token = token
-                        st.query_params["session"] = token
-                        st.rerun()
+                        email_sent = send_verification_email(reg_email, verification_token)
+
+                        if email_sent:
+                            st.success("Account created! Please check your email and verify your account before logging in.")
+                        else:
+                            st.warning("Account created, but verification email could not be sent. Please contact support.")
                     else:
                         st.error(result["error"])
 
@@ -1743,6 +1750,14 @@ def main():
     inject_custom_css()
     init_db()
     init_session_state()
+    verify_token = st.query_params.get("verify")
+    if verify_token:
+        result = verify_email_token(verify_token)
+        if result["success"]:
+            st.success("✅ Email verified successfully. You can now log in.")
+            st.query_params.clear()
+        else:
+            st.error(result["error"])
 
     if not st.session_state.logged_in:
         render_auth_page()
