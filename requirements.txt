@@ -7,3 +7,4 @@ pypdf
 bcrypt
 openai
 requests
+streamlit-mic-recorder
